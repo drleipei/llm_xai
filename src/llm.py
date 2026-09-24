@@ -1,4 +1,4 @@
-"""Unified OpenAI-compatible client for all configured LLM backends.
+﻿"""Unified OpenAI-compatible client for all configured LLM backends.
 
 The project intentionally exposes one :class:`LLMClient` regardless of the
 configured model. Provider/model/base URL/API key values are loaded from the
@@ -170,7 +170,7 @@ class LLMClient:
         """Create a client from the model ID and configuration.
 
         ``client`` is injectable for unit/offline tests. Production use creates
-        an :class:`openai.OpenAI` client against the configured Otago-compatible
+        an :class:`openai.OpenAI` client against the configured OpenAI-compatible
         endpoint.
         """
         self.settings = load_llm_settings(experiment_config, llm_id, project_root)
@@ -263,7 +263,7 @@ class LLMClient:
             "max_tokens": self.settings.max_output_tokens,
         }
 
-        # Claude Opus 4.6 exposed through the Otago gateway does not
+        # Some compatible backends does not
         # accept temperature and top_p in the same request.
         if self.llm_id == "claude_opus46":
             if top_p is not None and float(top_p) < 1.0:
@@ -650,3 +650,4 @@ def _strip_json_fence(text: str) -> str:
     if len(lines) < 3 or not lines[-1].strip().startswith("```"):
         return stripped
     return "\n".join(lines[1:-1]).strip()
+

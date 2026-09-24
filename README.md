@@ -1,4 +1,4 @@
-# LLM-Informed Explainable AI for Software Defect Prediction
+﻿# LLM-Informed Explainable AI for Software Defect Prediction
 
 This repository contains the reproducibility package for an empirical study of
 LLM-informed explainable AI methods for software defect prediction.
@@ -159,7 +159,7 @@ Tag: `v1.0-reproducibility`
 
 Release page:
 
-https://github.com/drleipei/llm_xai/releases/tag/v1.0-reproducibility
+See the repository Releases page and select tag 1.0-reproducibility.
 
 The release contains:
 
@@ -303,3 +303,4 @@ package:
 
 These exclusions prevent exploratory or non-primary outputs from being
 confused with the results reported in the manuscript.
+
