@@ -1,0 +1,414 @@
+schema_version: '1.0'
+project_id: llm_xai_experiment
+project_seed: 20260810
+paths:
+  project_root: .
+  configs_dir: configs
+  data_dir: data
+  raw_data_dir: data/raw
+  processed_data_dir: data/processed
+  models_dir: models
+  prompts_dir: prompts
+  results_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN
+  explanations_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/explanations
+  evaluations_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/evaluations
+  metrics_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/metrics
+  statistics_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/statistics
+  figures_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/figures
+  errors_dir: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/errors
+  results_root: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN
+reproducibility:
+  global_seed: 20260810
+  deterministic_sampling: true
+  preserve_input_order_after_sampling: false
+  record_random_seed_per_run: true
+  seed_policy: derive_from_global_seed_dataset_category_method_instance_run
+datasets:
+  qt:
+    id: qt
+    raw_csv: data/processed/qt/test.csv
+    processed_dir: data/processed/qt
+    frozen_predictor: models/qt_predictor.pkl
+    expected_dataset_value: qt
+data_schema:
+  expected_columns:
+  - dataset
+  - commit_id
+  - date
+  - bug
+  - fix
+  - ns
+  - nd
+  - nf
+  - entropy
+  - la
+  - ld
+  - lt
+  - ndev
+  - age
+  - nuc
+  - exp
+  - rexp
+  - sexp
+  target_column: bug
+  positive_target_value: 1
+  negative_target_value: 0
+  metadata_columns:
+  - dataset
+  - commit_id
+  - date
+  predictor_features:
+  - fix
+  - ns
+  - nd
+  - nf
+  - entropy
+  - la
+  - ld
+  - lt
+  - ndev
+  - age
+  - nuc
+  - exp
+  - rexp
+  - sexp
+  forbidden_predictor_features:
+  - dataset
+  - commit_id
+  - date
+  - bug
+  dataset_column: dataset
+  instance_id_column: commit_id
+  timestamp_column: date
+  derived_columns:
+    predicted_label: predicted_label
+    prediction_category: prediction_category
+  validate_exact_feature_order: true
+  fail_on_missing_columns: true
+  fail_on_extra_predictor_features: true
+  fail_on_duplicate_commit_id_within_dataset: false
+prediction:
+  threshold: 0.5
+  model_serializer: joblib
+  positive_response_name: defective
+  negative_response_name: clean
+  probability_target_for_explanations: original_predicted_class
+  frozen_predictor_required: true
+  prohibit_retraining_during_experiments: true
+prediction_categories:
+- TP
+- TN
+- FP
+- FN
+category_definitions:
+  TP:
+    true_label: 1
+    predicted_label: 1
+  TN:
+    true_label: 0
+    predicted_label: 0
+  FP:
+    true_label: 0
+    predicted_label: 1
+  FN:
+    true_label: 1
+    predicted_label: 0
+methods:
+  traditional:
+  - lime
+  - kernelshap
+  - lofo
+  - counterfactual
+  llm_informed:
+  - llm_lime
+  - llm_kernelshap
+  - llm_lofo
+  - llm_counterfactual
+  all:
+  - lime
+  - kernelshap
+  - lofo
+  - counterfactual
+  - llm_lime
+  - llm_kernelshap
+  - llm_lofo
+  - llm_counterfactual
+method_pairs:
+- traditional: lime
+  llm_informed: llm_lime
+- traditional: kernelshap
+  llm_informed: llm_kernelshap
+- traditional: lofo
+  llm_informed: llm_lofo
+- traditional: counterfactual
+  llm_informed: llm_counterfactual
+llm_models:
+- claude_opus46
+- deepseek_v32
+- gpt54
+- kimi_k25
+- qwen36_27b_local
+llm_env_files:
+  claude_opus46: configs/llm_env/claude_opus46.env
+  deepseek_v32: configs/llm_env/deepseek_v32.env
+  gpt54: configs/llm_env/gpt54.env
+  kimi_k25: configs/llm_env/kimi_k25.env
+  qwen36_27b_local: configs/llm_env/qwen36_27b_local.env
+llm_default_decoding:
+  temperature: 0.2
+  top_p: null
+explanation:
+  schema_version: '1.0'
+  top_k: 5
+  require_unique_features: true
+  sort_top_features_by_score_descending: true
+  allowed_directions:
+  - support
+  - oppose
+  - neutral
+  score_semantics: nonnegative_method_specific_importance_strength
+  llm_probability_policy: llm_must_not_invent_predictor_probabilities
+  numerical_ground_truth_source: frozen_predictor_only
+  required_record_fields:
+  - schema_version
+  - instance_id
+  - dataset
+  - category
+  - method
+  - llm_model
+  - run_id
+  - seed
+  - prompt_variant
+  - temperature
+  - top_p
+  - predicted_response
+  - predicted_response_probability
+  - top_features
+  top_feature_required_fields:
+  - feature
+  - value
+  - direction
+  - score
+  traditional_method_llm_model_value: null
+  traditional_method_prompt_variant_value: null
+runs:
+  repeated_runs_per_instance: 5
+  run_id_start: 1
+rq1:
+  enabled: true
+  title: Explanation stability
+  datasets:
+  - openstack
+  - qt
+  methods:
+  - llm_lime
+  - llm_kernelshap
+  - llm_lofo
+  - llm_counterfactual
+  llm_models:
+  - qwen36_27b_local
+  sample_per_category_per_dataset: 20
+  categories:
+  - TP
+  - TN
+  - FP
+  - FN
+  top_k: 5
+  repeated_runs: 5
+  decoding: llm_default_decoding
+  metrics:
+  - overlap_at_k
+  - rank_agreement_at_k
+  - direction_agreement_at_k
+  - score_stability
+  insufficient_category_policy: fail_with_clear_error
+rq2:
+  enabled: true
+  title: Independent model-response alignment
+  reuse_explanations_from: rq1
+  do_not_call_llm_during_evaluation: true
+  top_k: 5
+  intervention_scope: single_feature_only
+  hold_all_other_features_fixed: true
+  probability_target: original_predicted_class
+  perturbation_config: configs/perturbation.yaml
+  generation_probe_and_evaluation_must_be_separate: true
+  evaluator_must_not_accept_generation_probe_value: true
+  metrics:
+  - direction_consistency_rate
+  - meaningful_effect_rate
+  - delta_probability
+  - absolute_delta_probability
+  evaluation_detail_output: results/qwen36_27b_full/evaluations/rq2_evaluations.jsonl
+  aggregate_output: results/qwen36_27b_full/metrics/rq2_model_response_alignment.csv
+rq3:
+  enabled: true
+  title: Explanation discriminativeness
+  reuse_explanations_from: rq1
+  top_k: 5
+  metrics:
+  - normalized_feature_entropy
+  - pairwise_jaccard
+  - instance_idf_specificity
+  - separability_gap
+  pairwise_jaccard:
+    within_instance: true
+    between_instance: true
+  separability_gap:
+    definition: within_instance_similarity_minus_between_instance_similarity
+rq4:
+  enabled: true
+  title: Paired traditional versus LLM-informed comparison
+  reuse_metrics_from:
+  - rq1
+  - rq2
+  - rq3
+  method_pairs: method_pairs
+  paired_by:
+  - dataset
+  - category
+  - instance_id
+  primary_analysis:
+    test: wilcoxon_signed_rank
+    confidence_interval_method: paired_bootstrap
+    bootstrap_iterations: 10000
+    confidence_level: 0.95
+    report_effect_size: true
+    effect_size: rank_biserial_correlation
+  category_interaction_reporting: true
+  noninferiority:
+    enabled: false
+    status: requires_predeclared_margin_before_analysis
+    margin: null
+    direction: null
+rq5:
+  enabled: true
+  title: LLM decoding sensitivity
+  methods:
+  - llm_lime
+  - llm_kernelshap
+  - llm_lofo
+  - llm_counterfactual
+  llm_models: all
+  sample_per_category_per_dataset: 20
+  categories:
+  - TN
+  repeated_runs: 5
+  reuse_same_sample_across_configurations: true
+  insufficient_category_policy: fail_with_clear_error
+  configurations:
+  - id: temperature_0p0
+    temperature: 0.0
+    top_p: null
+  - id: temperature_0p2
+    temperature: 0.2
+    top_p: null
+  - id: temperature_0p5
+    temperature: 0.5
+    top_p: null
+  - id: temperature_0p8
+    temperature: 0.8
+    top_p: null
+  - id: top_p_0p9
+    temperature: null
+    top_p: 0.9
+  - id: top_p_0p8
+    temperature: null
+    top_p: 0.8
+  outcome_metrics:
+    stability:
+    - overlap_at_k
+    - rank_agreement_at_k
+    - direction_agreement_at_k
+    - score_stability
+    model_response_alignment:
+    - direction_consistency_rate
+    - meaningful_effect_rate
+    - delta_probability
+    - absolute_delta_probability
+    discriminativeness:
+    - normalized_feature_entropy
+    - pairwise_jaccard
+    - instance_idf_specificity
+    - separability_gap
+    operational:
+    - structural_compliance_rate
+    - execution_success_rate
+rq6:
+  enabled: true
+  title: Prompt component ablation
+  methods:
+  - llm_kernelshap
+  llm_models:
+  - qwen36_27b_local
+  sample_source: reuse_rq5_sample
+  sample_per_category_per_dataset: 20
+  insufficient_category_policy: fail_with_clear_error
+  repeated_runs: 5
+  decoding:
+    temperature: 0.2
+    top_p: 1.0
+  ablation_design: one_component_at_a_time
+  variants:
+  - full
+  - no_semantics
+  - no_grounding
+  - no_constraints
+  - no_instance_context
+  reuse_full_variant_when_already_generated: true
+  prompt_mapping_config: configs/prompts.yaml
+  outcome_metrics:
+  - overlap_at_k
+  - rank_agreement_at_k
+  - direction_agreement_at_k
+  - score_stability
+  - direction_consistency_rate
+  - meaningful_effect_rate
+  - delta_probability
+  - absolute_delta_probability
+  - normalized_feature_entropy
+  - pairwise_jaccard
+  - instance_idf_specificity
+  - separability_gap
+  - structural_compliance_rate
+  - execution_success_rate
+  reuse_full_variant_source: results/qwen36_rq5_shards
+  categories:
+  - TN
+outputs:
+  explanation_format: jsonl
+  evaluation_format: jsonl
+  aggregate_metric_format: csv
+  statistics_format: csv
+  error_format: jsonl
+  append_records_immediately: true
+  flush_after_each_record: true
+  atomic_small_file_writes: true
+  explanation_file_template: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/explanations/{rq}_{dataset}_{method}_{llm_model_or_none}_{prompt_variant_or_none}.jsonl
+  metric_file_template: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/metrics/{rq}_{metric_name}.csv
+  error_file_template: results/qwen36_rq6_shards/21_qt_llm_kernelshap_TN/errors/{rq}_errors.jsonl
+resume:
+  enabled: true
+  record_identity_fields:
+  - rq
+  - dataset
+  - category
+  - instance_id
+  - method
+  - llm_model
+  - run_id
+  - prompt_variant
+  - temperature
+  - top_p
+  skip_completed_records: true
+  never_repeat_completed_llm_call: true
+logging:
+  level: INFO
+  console: true
+  file: true
+  log_dir: logs
+  include_timestamp: true
+  include_run_context: true
+kernelshap:
+  background_sample_size: 100
+  background_random_state: 42

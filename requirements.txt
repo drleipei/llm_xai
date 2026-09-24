@@ -1,0 +1,29 @@
+# Core data/configuration
+numpy>=2.0,<3.0
+pandas>=2.2,<3.0
+PyYAML>=6.0,<7.0
+python-dotenv>=1.0,<2.0
+
+# Frozen predictor loading / classical ML
+scikit-learn==1.8.0
+joblib>=1.4,<2.0
+
+# Traditional XAI methods
+lime>=0.2.0.1
+shap>=0.46,<1.0
+
+# Unified OpenAI-compatible LLM client
+openai>=1.50,<3.0
+
+# Metrics / statistics
+scipy>=1.13,<2.0
+statsmodels>=0.14,<1.0
+
+# Experiment utilities
+jsonschema>=4.23,<5.0
+tqdm>=4.66,<5.0
+matplotlib>=3.9,<4.0
+
+# Quality / testing (used in later project stages)
+pytest>=8.3,<9.0
+ruff>=0.6,<1.0

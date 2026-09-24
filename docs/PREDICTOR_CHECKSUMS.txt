@@ -1,0 +1,19 @@
+Frozen predictor artifacts
+==========================
+
+openstack_predictor.pkl
+SHA256:
+a291e703e696668f187a5180ba830187d078e433fb1645a09c2b6dc22381c1c9
+
+qt_predictor.pkl
+SHA256:
+f9fd8dcb9a42e8b52db2f7b0a62e9faa248ee22f3fca0337d76da063b481202b
+
+These files are required for full reproduction but are not committed
+as ordinary Git objects because each exceeds GitHub's 100 MB per-file
+limit.
+
+Expected local paths:
+
+models/openstack_predictor.pkl
+models/qt_predictor.pkl

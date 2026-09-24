@@ -1,0 +1,31 @@
+{
+  "dataset": "openstack",
+  "split_strategy": "chronological_80_20",
+  "train_ratio": 0.8,
+  "features": [
+    "fix",
+    "ns",
+    "nd",
+    "nf",
+    "entropy",
+    "la",
+    "ld",
+    "lt",
+    "ndev",
+    "age",
+    "nuc",
+    "exp",
+    "rexp",
+    "sexp"
+  ],
+  "target": "bug",
+  "n_total": 22757,
+  "n_train": 18205,
+  "n_test": 4552,
+  "train_start_timestamp": 1451578374,
+  "train_end_timestamp": 1521590061,
+  "test_start_timestamp": 1521600894,
+  "test_end_timestamp": 1546240077,
+  "train_bug_rate": 0.27750617962098323,
+  "test_bug_rate": 0.1922231985940246
+}

@@ -1,0 +1,13 @@
+Generated: 2026-09-24T13:19:44+12:00
+
+Hostname:
+aoraki-login.otago.ac.nz
+
+Kernel:
+Linux aoraki-login.otago.ac.nz 5.14.0-687.49.1.el9_8.x86_64 #1 SMP PREEMPT_DYNAMIC Thu Sep 17 15:51:52 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+Python:
+Python 3.13.0
+
+Pip:
+pip 26.2.1 from /home/peile255/llm_xai_experiment/.venv313/lib/python3.13/site-packages/pip (python 3.13)

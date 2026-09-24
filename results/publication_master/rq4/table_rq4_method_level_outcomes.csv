@@ -1,0 +1,5 @@
+traditional_method,traditional_better,llm_informed_better,no_significant_difference,directional_total,llm_win_rate
+counterfactual,10,0,1,11,0.0
+kernelshap,11,0,0,11,0.0
+lime,6,4,1,11,0.36363636363636365
+lofo,10,0,1,11,0.0

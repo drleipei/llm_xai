@@ -1,0 +1,31 @@
+{
+  "dataset": "qt",
+  "split_strategy": "chronological_80_20",
+  "train_ratio": 0.8,
+  "features": [
+    "fix",
+    "ns",
+    "nd",
+    "nf",
+    "entropy",
+    "la",
+    "ld",
+    "lt",
+    "ndev",
+    "age",
+    "nuc",
+    "exp",
+    "rexp",
+    "sexp"
+  ],
+  "target": "bug",
+  "n_total": 23912,
+  "n_train": 19129,
+  "n_test": 4783,
+  "train_start_timestamp": 1420046511,
+  "train_end_timestamp": 1491995970,
+  "test_start_timestamp": 1491996738,
+  "test_end_timestamp": 1514676840,
+  "train_bug_rate": 0.15092268283757646,
+  "test_bug_rate": 0.1453062931214719
+}

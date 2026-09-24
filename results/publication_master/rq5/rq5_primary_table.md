@@ -1,0 +1,15 @@
+| metric | temperature_friedman_p | temperature_kendalls_w | top_p_friedman_p | top_p_kendalls_w |
+| --- | --- | --- | --- | --- |
+| overlap_at_k | <.001 | 1.000 | 0.261 | 0.042 |
+| rank_agreement_at_k | <.001 | 0.947 | 0.882 | 0.004 |
+| direction_agreement_at_k | <.001 | 0.329 | 0.453 | 0.025 |
+| score_stability | <.001 | 0.988 | 0.296 | 0.038 |
+| direction_consistency_rate | 0.687 | 0.015 | 0.592 | 0.016 |
+| meaningful_effect_rate | 0.230 | 0.045 | 0.520 | 0.020 |
+| mean_delta_probability | 0.167 | 0.053 | 0.519 | 0.021 |
+| mean_absolute_delta_probability | 0.072 | 0.073 | 0.417 | 0.027 |
+| normalized_feature_entropy | <.001 | 0.875 | 0.296 | 0.038 |
+| pairwise_jaccard_within_instance | <.001 | 1.000 | 0.458 | 0.024 |
+| pairwise_jaccard_between_instance | <.001 | 0.771 | 0.755 | 0.009 |
+| instance_idf_specificity | <.001 | 0.692 | 0.969 | 0.001 |
+| separability_gap | <.001 | 1.000 | 0.552 | 0.019 |
