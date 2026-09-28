@@ -1,3 +1,4 @@
+````
 # LLM-Informed Explainable AI for Software Defect Prediction
 
 This repository contains the reproducibility package for an empirical study of
@@ -175,9 +176,6 @@ llm_xai/
 ├── data/
 │   └── Study datasets and processed data
 │
-├── docs/
-│   └── Reproducibility and supporting documentation
-│
 ├── experiments/
 │   ├── _common.py
 │   ├── apply_rq1_qwen36_corrections.py
@@ -282,6 +280,10 @@ data/
 The same frozen dataset splits are used across matched experimental conditions
 to avoid introducing sampling differences into comparisons between traditional
 and LLM-informed explanations.
+
+Reproduction instructions are maintained at the repository root in
+`README_REPRODUCIBILITY.md`; there is no separate `docs/` directory in the
+current repository layout.
 
 ---
 
@@ -478,8 +480,7 @@ This document should be consulted for:
 - dataset preparation;
 - experiment execution;
 - configuration selection;
-- output generation;
-- integrity checks; and
+- output generation; and
 - reproduction of publication-level results.
 
 ---
@@ -536,3 +537,5 @@ publication metadata.
 
 Please refer to the repository license information for permitted use and
 redistribution.
+
+````

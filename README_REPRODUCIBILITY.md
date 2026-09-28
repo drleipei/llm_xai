@@ -11,7 +11,7 @@ The current repository and manuscript use three research questions:
 - **RQ2:** Decoding-parameter sensitivity
 - **RQ3:** Prompt-component ablation
 
-RQ1 evaluates explanation quality across three dimensions:
+RQ1 evaluates explanation quality across three complementary dimensions:
 
 - **Stability**
 - **Model-Response Alignment**
@@ -25,8 +25,8 @@ The primary LLM is:
   `qwen36_27b_local`
 
 Auxiliary multi-LLM experiments, smoke tests, failed infrastructure runs,
-partial runs, and superseded protocol runs are intentionally excluded from the
-primary reproducibility scope.
+partial runs, superseded protocol runs, and exploratory outputs not used in the
+manuscript are intentionally excluded from the primary reproducibility scope.
 
 ---
 
@@ -53,7 +53,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 ```
 
-Install the dependency specification provided with the repository or the
+Install the dependency specification available with the repository or the
 full reproducibility artifact.
 
 ---
@@ -74,8 +74,6 @@ llm_xai/
 │   └── experiment.rq3_qwen36.yaml
 │
 ├── data/
-│
-├── docs/
 │
 ├── experiments/
 │   ├── _common.py
@@ -114,26 +112,14 @@ llm_xai/
 │   ├── threshold_predictor.py
 │   └── utils.py
 │
+├── .gitattributes
+├── .gitignore
 ├── README.md
 └── README_REPRODUCIBILITY.md
 ```
 
----
-
-## Required Large Artifacts
-
-Full reproduction requires the frozen predictors:
-
-```text
-models/openstack_predictor.pkl
-models/qt_predictor.pkl
-```
-
-These model files are not assumed to be ordinary Git-tracked files if they
-exceed the hosting platform's per-file size limit.
-
-Where checksum metadata is provided under `docs/`, verify the downloaded
-predictors before running the experiments.
+There is no separate `docs/` directory in the current repository layout.
+Reproduction instructions are maintained in this file at the repository root.
 
 ---
 
@@ -482,8 +468,8 @@ dependencies.
 
 ### 2. Prepare data and predictors
 
-Confirm that the OpenStack and Qt data and frozen prediction models are
-available.
+Confirm that the OpenStack and Qt data and frozen prediction models required by
+the experiment configuration are available.
 
 ### 3. Run the RQ1 explanation evaluations
 
@@ -534,32 +520,6 @@ Use the corresponding build/finalisation scripts and verify the contents of:
 ```text
 results/publication_master/
 ```
-
----
-
-## Integrity Verification
-
-Where checksum files are provided under:
-
-```text
-docs/
-```
-
-use them to verify downloaded data, models, and archived experimental outputs.
-
-On Linux/macOS:
-
-```bash
-sha256sum -c <checksum-file>
-```
-
-On Windows PowerShell:
-
-```powershell
-Get-FileHash .\<file> -Algorithm SHA256
-```
-
-The computed hash should match the corresponding expected SHA256 value.
 
 ---
 
