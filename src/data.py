@@ -357,7 +357,7 @@ def stratified_sample_by_category(
     Args:
         categorised_frame: DataFrame containing a category column.
         experiment_config: Parsed experiment configuration.
-        rq_key: RQ configuration key (for example ``rq1`` or ``rq5``) whose
+        rq_key: RQ configuration key (for example ``rq1`` or ``rq2``) whose
             sampling settings should be used.
         dataset_id: Dataset identifier included in deterministic seed derivation.
         category_column: Column containing configured category labels.
