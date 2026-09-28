@@ -2,40 +2,123 @@
 
 ## Scope
 
-This package reproduces the primary Qwen3.6-27B study comparing four traditional
-explanation methods with four matched LLM-informed variants for software defect
-prediction.
+This package reproduces the primary Qwen3.6-27B study of LLM-informed
+explainable AI for software defect prediction.
 
-Primary LLM:
+The current repository and manuscript use three research questions:
 
-- Qwen3.6-27B
-- Hugging Face ID: `Qwen/Qwen3.6-27B`
-- Historical internal identifier retained in archived outputs: `qwen36_27b_local`
+- **RQ1:** Traditional vs. matched LLM-informed explanations
+- **RQ2:** Decoding-parameter sensitivity
+- **RQ3:** Prompt-component ablation
+
+RQ1 evaluates explanation quality across three dimensions:
+
+- **Stability**
+- **Model-Response Alignment**
+- **Discriminativeness**
+
+The primary LLM is:
+
+- **Qwen3.6-27B**
+- Hugging Face model ID: `Qwen/Qwen3.6-27B`
+- Historical internal identifier retained in archived outputs:
+  `qwen36_27b_local`
 
 Auxiliary multi-LLM experiments, smoke tests, failed infrastructure runs,
 partial runs, and superseded protocol runs are intentionally excluded from the
-primary artifact.
+primary reproducibility scope.
+
+---
 
 ## Environment
 
-Final experiments used:
+The final experiments used:
 
 - Linux x86_64
 - Python 3.13.0
 
-Two dependency specifications are provided:
-
-- `requirements.txt`: project-level compatible dependency ranges
-- `requirements-frozen.txt`: exact environment used for the final experiments
-
-Recommended setup:
+Create a virtual environment with:
 
 ```bash
 python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements-frozen.txt
 ```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+```
+
+Install the dependency specification provided with the repository or the
+full reproducibility artifact.
+
+---
+
+## Repository Layout
+
+The current repository is organised as follows:
+
+```text
+llm_xai/
+│
+├── configs/
+│   ├── rq2_shards/
+│   ├── rq3_shards/
+│   ├── experiment.qwen36_full.yaml
+│   ├── experiment.rq1_qwen36_full.yaml
+│   ├── experiment.rq2_qwen36.yaml
+│   └── experiment.rq3_qwen36.yaml
+│
+├── data/
+│
+├── docs/
+│
+├── experiments/
+│   ├── _common.py
+│   ├── apply_rq1_qwen36_corrections.py
+│   ├── build_qwen36_publication_tables.py
+│   ├── build_qwen36_rq1_primary_table.py
+│   ├── build_rq2_primary_table.py
+│   ├── build_rq3_component_summary.py
+│   ├── build_rq3_primary_table.py
+│   ├── finalize_rq2_for_rq3.py
+│   ├── finalize_rq3_statistics.py
+│   ├── finalize_rq5_statistics.py
+│   ├── plot_qwen36_rq1_heatmap.py
+│   ├── rq23_helpers.py
+│   ├── run_comparison.py
+│   ├── run_discriminativeness.py
+│   ├── run_model_response_alignment.py
+│   ├── run_rq2.py
+│   ├── run_rq3.py
+│   └── run_stability.py
+│
+├── results/
+│   ├── publication_master/
+│   ├── rq1/
+│   ├── rq2/
+│   └── rq3/
+│
+├── src/
+│   ├── __init__.py
+│   ├── data.py
+│   ├── explainers.py
+│   ├── llm.py
+│   ├── metrics.py
+│   ├── perturbation.py
+│   ├── predictor.py
+│   ├── threshold_predictor.py
+│   └── utils.py
+│
+├── README.md
+└── README_REPRODUCIBILITY.md
+```
+
+---
 
 ## Required Large Artifacts
 
@@ -46,98 +129,248 @@ models/openstack_predictor.pkl
 models/qt_predictor.pkl
 ```
 
-Expected SHA256 values are listed in `docs/PREDICTOR_CHECKSUMS.txt`.
+These model files are not assumed to be ordinary Git-tracked files if they
+exceed the hosting platform's per-file size limit.
 
-The predictors and full RQ5/RQ6 raw shard outputs are included in the separate
-full reproducibility archive associated with release tag
-`v1.0-reproducibility`.
+Where checksum metadata is provided under `docs/`, verify the downloaded
+predictors before running the experiments.
+
+---
 
 ## Data
 
 Study data are stored under:
 
 ```text
-data/raw/
-data/processed/
+data/
 ```
 
-Primary evaluation files:
+The study uses frozen OpenStack and Qt software defect prediction data.
 
-```text
-data/processed/openstack/test.csv
-data/processed/qt/test.csv
-```
+The same dataset splits and sampled instances are reused across matched
+traditional and LLM-informed conditions to avoid introducing unnecessary
+sampling variation into the comparison.
 
-Verify data integrity with:
-
-```bash
-sha256sum -c docs/SHA256_DATA.txt
-```
+---
 
 ## Random Seed and Sampling
 
-Global random seed:
+The global random seed used by the study is:
 
 ```text
 20260810
 ```
 
-Sampling uses 20 instances per prediction category (TP, TN, FP, FN) per
-dataset, yielding 80 instances per dataset and 160 dataset-specific instances
-overall.
+Sampling uses 20 instances per prediction category:
+
+```text
+TP
+TN
+FP
+FN
+```
+
+for each dataset.
+
+This yields:
+
+```text
+20 instances × 4 categories = 80 instances per dataset
+```
+
+and:
+
+```text
+80 instances × 2 datasets = 160 dataset-specific instances
+```
+
+for the primary sampling design.
+
+---
 
 ## Authoritative Configurations
 
-Use these configurations rather than any generic fallback configuration.
+Use the explicit experiment configurations rather than relying on generic
+fallback settings.
 
-### RQ1-RQ3
+### Primary Qwen3.6-27B configuration
 
 ```text
 configs/experiment.qwen36_full.yaml
 ```
 
-### RQ4
+### RQ1
 
 ```text
-configs/experiment.rq4_qwen36_full.yaml
+configs/experiment.rq1_qwen36_full.yaml
 ```
 
-### RQ5
+### RQ2
 
 ```text
-configs/experiment.rq5_qwen36.yaml
-configs/rq5_shards/
+configs/experiment.rq2_qwen36.yaml
+configs/rq2_shards/
 ```
 
-### RQ6
+### RQ3
 
 ```text
-configs/experiment.rq6_qwen36.yaml
-configs/rq6_shards/
+configs/experiment.rq3_qwen36.yaml
+configs/rq3_shards/
 ```
 
-The configuration loader supports explicit selection with:
+Where supported by the experiment loader, explicit configuration selection can
+be provided through:
 
 ```bash
 export LLM_XAI_EXPERIMENT_CONFIG=<config-file>
 ```
 
-## RQ1
+On Windows PowerShell:
+
+```powershell
+$env:LLM_XAI_EXPERIMENT_CONFIG="<config-file>"
+```
+
+---
+
+# RQ1 — Traditional vs. Matched LLM-Informed Explanations
+
+RQ1 compares four traditional explanation methods with four directly matched
+LLM-informed variants:
+
+| Traditional | LLM-informed |
+|---|---|
+| LIME | LLM-LIME |
+| KernelSHAP | LLM-KernelSHAP |
+| LOFO | LLM-LOFO |
+| Counterfactual | LLM-Counterfactual |
+
+Matched conditions use the same:
+
+- frozen prediction model;
+- dataset split;
+- sampled instance;
+- predictor feature space;
+- explanation-method pairing; and
+- evaluation procedure.
+
+RQ1 is evaluated across three dimensions.
+
+---
+
+## RQ1-A — Stability
+
+Stability evaluates whether repeated explanation runs produce consistent
+high-ranked features, directions, and orderings.
 
 Main script:
 
 ```text
-experiments/run_rq1.py
+experiments/run_stability.py
 ```
 
-RQ1 evaluates explanation stability using repeated runs per
-instance/method. Archived RQ1 outputs are under:
+Primary metrics include:
+
+- Direction Agreement@5
+- Overlap@5
+- Rank Agreement@5
+
+Associated RQ1 outputs are stored under:
 
 ```text
-results/rq1_rq3/
+results/rq1/
 ```
 
-## RQ2
+---
+
+## RQ1-B — Model-Response Alignment
+
+Model-Response Alignment evaluates whether the direction and magnitude implied
+by an explanation are consistent with the actual response of the frozen
+prediction model under feature perturbation.
+
+Main script:
+
+```text
+experiments/run_model_response_alignment.py
+```
+
+Primary metrics include:
+
+- Direction Consistency
+- Meaningful-Effect Rate
+- Mean `|Δp|`
+
+Candidate explanation features are restricted to usable predictor features
+before Top-k evaluation. When fewer than the target number of usable unique
+features are available, the available features are evaluated without artificial
+padding.
+
+Associated RQ1 outputs are stored under:
+
+```text
+results/rq1/
+```
+
+---
+
+## RQ1-C — Discriminativeness
+
+Discriminativeness evaluates whether explanations remain instance-specific
+rather than converging toward highly similar feature sets across instances.
+
+Main script:
+
+```text
+experiments/run_discriminativeness.py
+```
+
+Primary metrics include:
+
+- Normalised Feature Entropy
+- Pairwise Jaccard
+- Instance-IDF Specificity
+
+Associated RQ1 outputs are stored under:
+
+```text
+results/rq1/
+```
+
+---
+
+## RQ1 Matched Comparison
+
+The paired comparison between traditional explanations and their matched
+LLM-informed counterparts is implemented in:
+
+```text
+experiments/run_comparison.py
+```
+
+Additional RQ1 analysis and publication-oriented processing are provided by:
+
+```text
+experiments/apply_rq1_qwen36_corrections.py
+experiments/build_qwen36_rq1_primary_table.py
+experiments/build_qwen36_publication_tables.py
+experiments/plot_qwen36_rq1_heatmap.py
+```
+
+The comparison outputs are organised under:
+
+```text
+results/rq1/
+```
+
+---
+
+# RQ2 — Decoding-Parameter Sensitivity
+
+RQ2 evaluates whether LLM-informed explanations are sensitive to decoding
+parameters while holding the dataset, instances, explanation method, predictor,
+and LLM fixed.
 
 Main script:
 
@@ -145,13 +378,39 @@ Main script:
 experiments/run_rq2.py
 ```
 
-RQ2 evaluates up to the five highest-ranked usable unique features returned by
-the explanation pipeline. Candidate features are deduplicated and restricted
-to the predictor feature space before Top-5 truncation. When fewer than five
-usable unique features are available, all available features are evaluated
-without artificial padding.
+Primary configuration:
 
-## RQ3
+```text
+configs/experiment.rq2_qwen36.yaml
+```
+
+Shard-level configurations:
+
+```text
+configs/rq2_shards/
+```
+
+Primary table generation:
+
+```text
+experiments/build_rq2_primary_table.py
+```
+
+RQ2 outputs are stored under:
+
+```text
+results/rq2/
+```
+
+The decoding configurations should be taken directly from the authoritative
+RQ2 configuration files in the repository.
+
+---
+
+# RQ3 — Prompt-Component Ablation
+
+RQ3 evaluates the contribution of prompt components by comparing the full
+prompt with controlled ablation variants.
 
 Main script:
 
@@ -159,89 +418,42 @@ Main script:
 experiments/run_rq3.py
 ```
 
-RQ3 evaluates explanation discriminativeness using entropy, within/between
-pairwise Jaccard, instance-IDF specificity, and separability gap.
-
-Verify archived RQ1-RQ3 outputs with:
-
-```bash
-sha256sum -c docs/SHA256_RQ1_RQ3.txt
-```
-
-## RQ4
-
-Main script:
+Primary configuration:
 
 ```text
-experiments/run_rq4.py
+configs/experiment.rq3_qwen36.yaml
 ```
 
-RQ4 operates on completed RQ1-RQ3 metrics and performs paired traditional vs.
-matched LLM-informed comparisons. Final outputs are under:
+Shard-level configurations:
 
 ```text
-results/rq4/
+configs/rq3_shards/
 ```
 
-## RQ5
-
-Main script:
+RQ3 post-processing and analysis are supported by:
 
 ```text
-experiments/run_rq5.py
+experiments/build_rq3_component_summary.py
+experiments/build_rq3_primary_table.py
+experiments/finalize_rq3_statistics.py
 ```
 
-Six decoding configurations are evaluated:
+Shared RQ2/RQ3 utilities are located in:
 
 ```text
-T=0.0, top_p=1.0
-T=0.2, top_p=1.0
-T=0.5, top_p=1.0
-T=0.8, top_p=1.0
-T=0.2, top_p=0.9
-T=0.2, top_p=0.8
+experiments/rq23_helpers.py
 ```
 
-There are 32 dataset-category-method blocks. Final aggregated outputs are under:
+RQ3 outputs are stored under:
 
 ```text
-results/rq5/
+results/rq3/
 ```
 
-The complete raw 32-shard outputs are included in the separate full artifact.
+The prompt conditions and fixed decoding settings should be taken directly from
+the authoritative RQ3 configuration files in the repository.
 
-## RQ6
-
-Main script:
-
-```text
-experiments/run_rq6.py
-```
-
-Five prompt conditions are evaluated:
-
-```text
-full
-no_semantics
-no_grounding
-no_constraints
-no_instance_context
-```
-
-The decoding configuration is fixed at:
-
-```text
-temperature = 0.2
-top_p = 1.0
-```
-
-There are 32 dataset-category-method blocks. Final aggregated outputs are under:
-
-```text
-results/rq6/
-```
-
-The complete raw 32-shard outputs are included in the separate full artifact.
+---
 
 ## Publication-Oriented Outputs
 
@@ -251,12 +463,150 @@ Publication tables and summaries are stored under:
 results/publication_master/
 ```
 
-These files provide the direct bridge between archived experimental outputs
-and values reported in the manuscript.
+These files provide the bridge between experimental outputs and the values
+reported in the manuscript.
+
+Where possible, manuscript tables should be generated from the stored analysis
+outputs rather than manually transcribed.
+
+---
+
+## Recommended Reproduction Order
+
+A clean reproduction should follow the dependency structure of the study.
+
+### 1. Prepare the environment
+
+Create and activate the Python environment and install the required
+dependencies.
+
+### 2. Prepare data and predictors
+
+Confirm that the OpenStack and Qt data and frozen prediction models are
+available.
+
+### 3. Run the RQ1 explanation evaluations
+
+Run:
+
+```text
+experiments/run_stability.py
+experiments/run_model_response_alignment.py
+experiments/run_discriminativeness.py
+```
+
+### 4. Run the matched RQ1 comparison
+
+Run:
+
+```text
+experiments/run_comparison.py
+```
+
+### 5. Generate RQ1 publication outputs
+
+Use the RQ1 analysis and table-generation scripts under `experiments/`.
+
+### 6. Run RQ2
+
+Use:
+
+```text
+experiments/run_rq2.py
+```
+
+with the RQ2 configuration and shard files.
+
+### 7. Run RQ3
+
+Use:
+
+```text
+experiments/run_rq3.py
+```
+
+with the RQ3 configuration and shard files.
+
+### 8. Generate publication-level outputs
+
+Use the corresponding build/finalisation scripts and verify the contents of:
+
+```text
+results/publication_master/
+```
+
+---
+
+## Integrity Verification
+
+Where checksum files are provided under:
+
+```text
+docs/
+```
+
+use them to verify downloaded data, models, and archived experimental outputs.
+
+On Linux/macOS:
+
+```bash
+sha256sum -c <checksum-file>
+```
+
+On Windows PowerShell:
+
+```powershell
+Get-FileHash .\<file> -Algorithm SHA256
+```
+
+The computed hash should match the corresponding expected SHA256 value.
+
+---
+
+## Reproducibility Controls
+
+The experimental design uses several controls intended to isolate the effect of
+LLM-informed explanation generation.
+
+Across matched traditional and LLM-informed conditions, the study keeps fixed:
+
+- the prediction model;
+- the data split;
+- the sampled instances;
+- the predictor feature space;
+- the matched explanation method; and
+- the evaluation procedure.
+
+For stochastic LLM generation, repeated runs and fixed configurations are used
+to support controlled comparison.
+
+---
+
+## Reproducibility Scope
+
+The primary reproducibility package focuses on experiments and outputs used in
+the current manuscript.
+
+The following are intentionally excluded from the primary reported analysis:
+
+- smoke tests;
+- connectivity tests;
+- failed infrastructure runs;
+- incomplete runs;
+- superseded protocol runs; and
+- exploratory outputs not used in the manuscript.
+
+This separation prevents non-primary experimental artefacts from being confused
+with the results reported in the paper.
+
+---
 
 ## Double-Blind Review
 
 Institution-specific hostnames, account paths, and author-identifying metadata
-are intentionally omitted from the reviewer-facing repository. Repository
-access and artifact sharing should follow the anonymity requirements of the
-target venue.
+should be omitted from reviewer-facing materials where required by the target
+venue.
+
+Repository access, release metadata, and artifact sharing should follow the
+double-blind or anonymous-review requirements of the venue to which the
+manuscript is submitted.
