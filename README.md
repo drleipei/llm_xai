@@ -1,4 +1,3 @@
-````
 # LLM-Informed Explainable AI for Software Defect Prediction
 
 This repository contains the reproducibility package for an empirical study of
@@ -537,5 +536,3 @@ publication metadata.
 
 Please refer to the repository license information for permitted use and
 redistribution.
-
-````
