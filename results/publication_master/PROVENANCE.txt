@@ -1,27 +1,27 @@
 Qwen3.6 27B publication master package
 
-RQ1-RQ4 source:
+RQ1 source:
 results/qwen36_27b_full_PUBLICATION_COMPLETE_20260827
 
-RQ5 source:
-results/qwen36_rq5_final
+RQ2 source:
+results/qwen36_rq2_final
 Frozen snapshot:
-snapshots/rq5_publication_FINAL_20260907
+snapshots/rq2_publication_FINAL_20260907
 
-RQ6 source:
-results/qwen36_rq6_final
+RQ3 source:
+results/qwen36_rq3_final
 Frozen protocol:
-snapshots/rq6_sharded_protocol_FINAL4_20260903
+snapshots/rq3_sharded_protocol_FINAL4_20260903
 Frozen publication tables:
-snapshots/rq6_publication_tables_FINAL_20260907
+snapshots/rq3_publication_tables_FINAL_20260907
 
-RQ5 reference decoding:
+RQ2 reference decoding:
 temperature = 0.2
 top_p = 1.0
 
-RQ6 decoding fixed at:
+RQ3 decoding fixed at:
 temperature = 0.2
 top_p = 1.0
 
-RQ6 FULL condition reused the completed RQ5
+RQ3 FULL condition reused the completed RQ2
 temperature=0.2, top_p=1.0 baseline.
