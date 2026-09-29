@@ -1,5 +1,0 @@
-ablation,significant_metrics,full_higher_significant_metrics,ablation_higher_significant_metrics,mean_absolute_effect_across_metrics
-no_instance_context,9,8,1,0.06516407994102832
-no_semantics,9,7,2,0.04058777342762469
-no_constraints,9,8,1,0.016175206462515575
-no_grounding,2,1,1,0.004304518545079384
