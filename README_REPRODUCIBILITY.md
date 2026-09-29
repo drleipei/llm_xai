@@ -112,7 +112,6 @@ llm_xai/
 │   ├── threshold_predictor.py
 │   └── utils.py
 │
-├── .gitattributes
 ├── .gitignore
 ├── README.md
 └── README_REPRODUCIBILITY.md
