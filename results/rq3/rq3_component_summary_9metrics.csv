@@ -1,0 +1,5 @@
+ablation,significant_metrics,full_higher_significant_metrics,ablation_higher_significant_metrics,mams
+no_instance_context,7,6,1,0.06431687647211198
+no_semantics,6,5,1,0.03763140388527463
+no_constraints,5,5,0,0.011473284052151766
+no_grounding,1,0,1,0.0033371551077931113

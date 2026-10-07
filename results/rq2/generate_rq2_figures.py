@@ -3,22 +3,22 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 
 # ============================================================
 # RQ2 publication figures
 #
+# Final design:
+#   3 dimensions × 3 metrics = 9 primary metrics
+#
 # Place this script in:
-#   results/publication_master/rq2/
+#   results/rq2/
 #
 # Required CSV files in the same directory:
 #   rq2_primary_table.csv
 #   rq2_friedman_kendalls_w.csv
-#
-# Also required from:
-#   results/rq2/metrics/rq2_descriptive_by_decoding.csv
+#   rq2_descriptive_by_decoding.csv
 #
 # Output:
 #   Figure5_RQ2_Decoding_Sensitivity.png
@@ -30,8 +30,6 @@ BASE_DIR = Path(__file__).resolve().parent
 
 PRIMARY_CSV = BASE_DIR / "rq2_primary_table.csv"
 FRIEDMAN_CSV = BASE_DIR / "rq2_friedman_kendalls_w.csv"
-
-# publication_master/rq2 -> results/rq2/metrics
 DESCRIPTIVE_CSV = BASE_DIR / "rq2_descriptive_by_decoding.csv"
 
 DPI = 400
@@ -44,39 +42,57 @@ DPI = 400
 COLOR_BLUE = "#214F7A"
 COLOR_ORANGE = "#D97706"
 COLOR_TEAL = "#2A7F9E"
-COLOR_RED = "#B85C38"
 
 COLOR_GRID = "#D9DEE5"
 COLOR_TEXT = "#202124"
 COLOR_SPINE = "#4B5563"
-COLOR_HIGHLIGHT = "#F6F2E8"
-
-TEMP_COLORS = {
-    0.0: "#214F7A",
-    0.2: "#2A7F9E",
-    0.5: "#D97706",
-    0.8: "#B85C38",
-}
 
 
 # ============================================================
-# Metric mappings
+# Final RQ2 metric design
+# 3 dimensions × 3 metrics = 9 metrics
 # ============================================================
 
 METRIC_LABELS = {
-    "overlap_at_k": "Overlap@K",
-    "rank_agreement_at_k": "Rank Agreement@K",
-    "direction_agreement_at_k": "Direction Agreement@K",
-    "score_stability": "Score Stability",
-    "direction_consistency_rate": "Direction Consistency",
-    "meaningful_effect_rate": "Meaningful Effect",
-    "mean_delta_probability": "Mean signed Δp",
-    "mean_absolute_delta_probability": "Mean |Δp|",
-    "normalized_feature_entropy": "Normalized Feature Entropy",
-    "pairwise_jaccard_within_instance": "Within-instance Jaccard",
-    "pairwise_jaccard_between_instance": "Between-instance Jaccard",
-    "instance_idf_specificity": "Instance-IDF",
-    "separability_gap": "Separability Gap",
+
+    # --------------------------------------------------------
+    # Stability
+    # --------------------------------------------------------
+
+    "overlap_at_k":
+        "Overlap@K",
+
+    "rank_agreement_at_k":
+        "Rank Agreement@K",
+
+    "direction_agreement_at_k":
+        "Direction Agreement@K",
+
+    # --------------------------------------------------------
+    # Model-response alignment
+    # --------------------------------------------------------
+
+    "direction_consistency_rate":
+        "Direction Consistency Rate",
+
+    "meaningful_effect_rate":
+        "Meaningful-Effect Rate",
+
+    "mean_absolute_delta_probability":
+        "Mean |Δp|",
+
+    # --------------------------------------------------------
+    # Discriminativeness
+    # --------------------------------------------------------
+
+    "normalized_feature_entropy":
+        "Normalized Feature Entropy",
+
+    "pairwise_jaccard_between_instance":
+        "Between-instance Jaccard",
+
+    "instance_idf_specificity":
+        "Instance-IDF Specificity",
 }
 
 
@@ -84,17 +100,97 @@ STABILITY_METRICS = [
     "overlap_at_k",
     "rank_agreement_at_k",
     "direction_agreement_at_k",
-    "score_stability",
 ]
+
+
+ALIGNMENT_METRICS = [
+    "direction_consistency_rate",
+    "meaningful_effect_rate",
+    "mean_absolute_delta_probability",
+]
+
 
 DISCRIM_METRICS = [
-    "pairwise_jaccard_within_instance",
+    "normalized_feature_entropy",
     "pairwise_jaccard_between_instance",
     "instance_idf_specificity",
-    "separability_gap",
 ]
 
-ALL_METRICS = list(METRIC_LABELS.keys())
+
+ALL_METRICS = (
+    STABILITY_METRICS
+    + ALIGNMENT_METRICS
+    + DISCRIM_METRICS
+)
+
+
+# ============================================================
+# Plot styling by metric
+# ============================================================
+
+METRIC_COLORS = {
+
+    # Stability
+    "overlap_at_k":
+        COLOR_BLUE,
+
+    "rank_agreement_at_k":
+        COLOR_TEAL,
+
+    "direction_agreement_at_k":
+        COLOR_ORANGE,
+
+    # Model-response alignment
+    "direction_consistency_rate":
+        COLOR_BLUE,
+
+    "meaningful_effect_rate":
+        COLOR_TEAL,
+
+    "mean_absolute_delta_probability":
+        COLOR_ORANGE,
+
+    # Discriminativeness
+    "normalized_feature_entropy":
+        COLOR_BLUE,
+
+    "pairwise_jaccard_between_instance":
+        COLOR_ORANGE,
+
+    "instance_idf_specificity":
+        COLOR_TEAL,
+}
+
+
+METRIC_MARKERS = {
+
+    STABILITY_METRICS[0]:
+        "o",
+
+    STABILITY_METRICS[1]:
+        "s",
+
+    STABILITY_METRICS[2]:
+        "^",
+
+    ALIGNMENT_METRICS[0]:
+        "o",
+
+    ALIGNMENT_METRICS[1]:
+        "s",
+
+    ALIGNMENT_METRICS[2]:
+        "^",
+
+    DISCRIM_METRICS[0]:
+        "o",
+
+    DISCRIM_METRICS[1]:
+        "s",
+
+    DISCRIM_METRICS[2]:
+        "^",
+}
 
 
 # ============================================================
@@ -104,30 +200,60 @@ ALL_METRICS = list(METRIC_LABELS.keys())
 def set_global_style():
 
     plt.rcParams.update({
-        "font.family": "DejaVu Sans",
-        "font.size": 11,
 
-        "axes.titlesize": 13,
-        "axes.titleweight": "bold",
-        "axes.labelsize": 12,
+        "font.family":
+            "DejaVu Sans",
 
-        "axes.edgecolor": COLOR_SPINE,
-        "axes.linewidth": 0.9,
+        "font.size":
+            11,
 
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
+        "axes.titlesize":
+            13,
 
-        "text.color": COLOR_TEXT,
-        "axes.labelcolor": COLOR_TEXT,
-        "xtick.color": COLOR_TEXT,
-        "ytick.color": COLOR_TEXT,
+        "axes.titleweight":
+            "bold",
 
-        "legend.fontsize": 10,
-        "legend.frameon": False,
+        "axes.labelsize":
+            11,
 
-        "figure.facecolor": "white",
-        "axes.facecolor": "white",
-        "savefig.facecolor": "white",
+        "axes.edgecolor":
+            COLOR_SPINE,
+
+        "axes.linewidth":
+            0.9,
+
+        "xtick.labelsize":
+            10,
+
+        "ytick.labelsize":
+            10,
+
+        "text.color":
+            COLOR_TEXT,
+
+        "axes.labelcolor":
+            COLOR_TEXT,
+
+        "xtick.color":
+            COLOR_TEXT,
+
+        "ytick.color":
+            COLOR_TEXT,
+
+        "legend.fontsize":
+            9,
+
+        "legend.frameon":
+            False,
+
+        "figure.facecolor":
+            "white",
+
+        "axes.facecolor":
+            "white",
+
+        "savefig.facecolor":
+            "white",
     })
 
 
@@ -137,22 +263,37 @@ def set_global_style():
 
 def load_data():
 
-    if not PRIMARY_CSV.exists():
-        raise FileNotFoundError(f"Missing: {PRIMARY_CSV}")
+    required_files = [
+        PRIMARY_CSV,
+        FRIEDMAN_CSV,
+        DESCRIPTIVE_CSV,
+    ]
 
-    if not FRIEDMAN_CSV.exists():
-        raise FileNotFoundError(f"Missing: {FRIEDMAN_CSV}")
+    for path in required_files:
 
-    if not DESCRIPTIVE_CSV.exists():
-        raise FileNotFoundError(
-            f"Missing descriptive file: {DESCRIPTIVE_CSV}"
-        )
+        if not path.exists():
 
-    primary = pd.read_csv(PRIMARY_CSV)
-    friedman = pd.read_csv(FRIEDMAN_CSV)
-    descriptive = pd.read_csv(DESCRIPTIVE_CSV)
+            raise FileNotFoundError(
+                f"Missing required file:\n{path}"
+            )
 
-    return primary, friedman, descriptive
+    primary = pd.read_csv(
+        PRIMARY_CSV
+    )
+
+    friedman = pd.read_csv(
+        FRIEDMAN_CSV
+    )
+
+    descriptive = pd.read_csv(
+        DESCRIPTIVE_CSV
+    )
+
+    return (
+        primary,
+        friedman,
+        descriptive,
+    )
 
 
 # ============================================================
@@ -161,145 +302,415 @@ def load_data():
 
 def clean_axis(ax):
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    ax.spines["left"].set_color(COLOR_SPINE)
-    ax.spines["bottom"].set_color(COLOR_SPINE)
-
-    ax.grid(
-        color=COLOR_GRID,
-        linewidth=0.7,
-        alpha=0.5,
+    ax.spines[
+        "top"
+    ].set_visible(
+        False
     )
 
-    ax.set_axisbelow(True)
+    ax.spines[
+        "right"
+    ].set_visible(
+        False
+    )
+
+    ax.spines[
+        "left"
+    ].set_color(
+        COLOR_SPINE
+    )
+
+    ax.spines[
+        "bottom"
+    ].set_color(
+        COLOR_SPINE
+    )
+
+    ax.grid(
+        axis="y",
+        color=COLOR_GRID,
+        linewidth=0.7,
+        alpha=0.55,
+    )
+
+    ax.set_axisbelow(
+        True
+    )
+
+
+def validate_final_design(
+    primary,
+    descriptive,
+):
+
+    print()
+
+    print(
+        "Validating final RQ2 design:"
+    )
+
+    print(
+        "3 dimensions x 3 metrics "
+        "= 9 primary metrics"
+    )
+
+    print()
+
+    descriptive_metrics = set(
+        descriptive[
+            "metric"
+        ]
+        .dropna()
+        .astype(str)
+    )
+
+    primary_metrics = set(
+        primary[
+            "metric"
+        ]
+        .dropna()
+        .astype(str)
+    )
+
+    for metric in ALL_METRICS:
+
+        if (
+            metric
+            not in descriptive_metrics
+        ):
+
+            raise ValueError(
+                "Metric missing from "
+                "rq2_descriptive_by_decoding.csv: "
+                f"{metric}"
+            )
+
+        if (
+            metric
+            not in primary_metrics
+        ):
+
+            raise ValueError(
+                "Metric missing from "
+                "rq2_primary_table.csv: "
+                f"{metric}"
+            )
+
+        print(
+            f"[OK] "
+            f"{METRIC_LABELS[metric]}"
+        )
+
+    print()
+
+    print(
+        "Metrics excluded from final "
+        "primary RQ2 analysis:"
+    )
+
+    print(
+        "  Score Stability"
+    )
+
+    print(
+        "  Mean signed Δp"
+    )
+
+    print(
+        "  Within-instance Jaccard"
+    )
+
+    print(
+        "  Separability Gap"
+    )
+
+    print()
+
+
+def get_temperature_metric(
+    temp_df,
+    metric,
+    temperatures,
+):
+
+    d = (
+        temp_df[
+            temp_df[
+                "metric"
+            ].eq(
+                metric
+            )
+        ]
+        .set_index(
+            "temperature"
+        )
+        .reindex(
+            temperatures
+        )
+    )
+
+    if (
+        d[
+            "mean"
+        ]
+        .isna()
+        .any()
+    ):
+
+        missing = [
+            t
+            for t
+            in temperatures
+            if t
+            not in
+            temp_df.loc[
+                temp_df[
+                    "metric"
+                ].eq(
+                    metric
+                ),
+                "temperature",
+            ].tolist()
+        ]
+
+        raise ValueError(
+            "Missing temperature values "
+            f"for {metric}: "
+            f"{missing}"
+        )
+
+    return d
+
+
+def draw_temperature_panel(
+    ax,
+    temp_df,
+    metrics,
+    temperatures,
+    title,
+    panel_label,
+    legend_loc="best",
+    legend_bbox=None,
+):
+
+    for metric in metrics:
+
+        d = get_temperature_metric(
+            temp_df,
+            metric,
+            temperatures,
+        )
+
+        ax.plot(
+            temperatures,
+            d[
+                "mean"
+            ].astype(float),
+            marker=(
+                METRIC_MARKERS[
+                    metric
+                ]
+            ),
+            linewidth=2.0,
+            markersize=6.5,
+            color=(
+                METRIC_COLORS[
+                    metric
+                ]
+            ),
+            label=(
+                METRIC_LABELS[
+                    metric
+                ]
+            ),
+        )
+
+    # Reference decoding setting
+    ax.axvline(
+        0.2,
+        linestyle="--",
+        linewidth=1.1,
+        color=COLOR_SPINE,
+        alpha=0.65,
+    )
+
+    ax.set_title(
+        f"{panel_label} "
+        f"{title}",
+        fontsize=12.5,
+        pad=10,
+    )
+
+    ax.set_xlabel(
+        "temperature"
+    )
+
+    ax.set_xticks(
+        temperatures
+    )
+
+    clean_axis(
+        ax
+    )
+
+    legend_kwargs = {
+        "loc":
+            legend_loc,
+
+        "fontsize":
+            8.7,
+    }
+
+    if legend_bbox is not None:
+
+        legend_kwargs[
+            "bbox_to_anchor"
+        ] = legend_bbox
+
+    ax.legend(
+        **legend_kwargs
+    )
 
 
 # ============================================================
 # Figure 5
 # Temperature sensitivity
+#
+# 3 panels:
+#   (a) Repeat-Run Stability
+#   (b) Model-Response Alignment
+#   (c) Discriminativeness
 # ============================================================
 
-def figure5_temperature_sensitivity(descriptive):
+def figure5_temperature_sensitivity(
+    descriptive
+):
 
-    # Only temperature analysis:
+    # --------------------------------------------------------
+    # temperature analysis:
     # top_p fixed at 1.0
+    # --------------------------------------------------------
+
     temp_df = descriptive[
-        descriptive["top_p"].eq(1.0)
-        & descriptive["temperature"].isin([0.0, 0.2, 0.5, 0.8])
+        (
+            descriptive[
+                "top_p"
+            ].eq(
+                1.0
+            )
+        )
+        &
+        (
+            descriptive[
+                "temperature"
+            ].isin(
+                [
+                    0.0,
+                    0.2,
+                    0.5,
+                    0.8,
+                ]
+            )
+        )
     ].copy()
+
+    temperatures = [
+        0.0,
+        0.2,
+        0.5,
+        0.8,
+    ]
 
     fig, axes = plt.subplots(
         1,
-        2,
-        figsize=(11.5, 5.8),
-        gridspec_kw={"wspace": 0.25},
-    )
-
-    ax1, ax2 = axes
-
-    temperatures = [0.0, 0.2, 0.5, 0.8]
-
-    # --------------------------------------------------------
-    # Panel A: Stability
-    # --------------------------------------------------------
-
-    for metric in STABILITY_METRICS:
-
-        d = (
-            temp_df[temp_df["metric"].eq(metric)]
-            .set_index("temperature")
-            .reindex(temperatures)
-        )
-
-        ax1.plot(
-            temperatures,
-            d["mean"],
-            marker="o",
-            linewidth=2.0,
-            markersize=6.5,
-            label=METRIC_LABELS[metric],
-        )
-
-    ax1.axvline(
-        0.2,
-        linestyle="--",
-        linewidth=1.0,
-        color=COLOR_SPINE,
-        alpha=0.6,
-    )
-
-    ax1.text(
-        0.205,
-        ax1.get_ylim()[1] if ax1.get_ylim()[1] else 1,
-        "",
-    )
-
-    ax1.set_title(
-        "(a) Repeat-run stability",
-        fontsize=13,
-        pad=10,
-    )
-
-    ax1.set_xlabel("Temperature")
-    ax1.set_ylabel("Mean metric value")
-
-    ax1.set_xticks(temperatures)
-
-    clean_axis(ax1)
-
-    ax1.legend(
-        loc="best",
-        fontsize=9,
+        3,
+        figsize=(
+            14.2,
+            5.4,
+        ),
+        gridspec_kw={
+            "wspace":
+                0.28
+        },
     )
 
     # --------------------------------------------------------
-    # Panel B: Discriminativeness
+    # Panel A — Stability
     # --------------------------------------------------------
 
-    for metric in DISCRIM_METRICS:
-
-        d = (
-            temp_df[temp_df["metric"].eq(metric)]
-            .set_index("temperature")
-            .reindex(temperatures)
-        )
-
-        ax2.plot(
-            temperatures,
-            d["mean"],
-            marker="o",
-            linewidth=2.0,
-            markersize=6.5,
-            label=METRIC_LABELS[metric],
-        )
-
-    ax2.axvline(
-        0.2,
-        linestyle="--",
-        linewidth=1.0,
-        color=COLOR_SPINE,
-        alpha=0.6,
+    draw_temperature_panel(
+        axes[
+            0
+        ],
+        temp_df,
+        STABILITY_METRICS,
+        temperatures,
+        "Repeat-Run Stability",
+        "(a)",
+        legend_loc="lower left",
     )
 
-    ax2.set_title(
-        "(b) Instance discriminativeness",
-        fontsize=13,
-        pad=10,
+    axes[
+        0
+    ].set_ylabel(
+        "Mean metric value"
     )
 
-    ax2.set_xlabel("Temperature")
-    ax2.set_ylabel("Mean metric value")
+    # --------------------------------------------------------
+    # Panel B — Model-response alignment
+    # --------------------------------------------------------
 
-    ax2.set_xticks(temperatures)
-
-    clean_axis(ax2)
-
-    ax2.legend(
-        loc="best",
-        fontsize=9,
+    draw_temperature_panel(
+        axes[
+            1
+        ],
+        temp_df,
+        ALIGNMENT_METRICS,
+        temperatures,
+        "Model-Response Alignment",
+        "(b)",
+        legend_loc="center right",
     )
+
+    axes[
+        1
+    ].set_ylabel(
+        "Mean metric value"
+    )
+
+    # --------------------------------------------------------
+    # Panel C — Discriminativeness
+    #
+    # Legend deliberately positioned in the empty region
+    # between the entropy and Jaccard curves so that it
+    # does not overlap any plotted line.
+    # --------------------------------------------------------
+
+    draw_temperature_panel(
+        axes[
+            2
+        ],
+        temp_df,
+        DISCRIM_METRICS,
+        temperatures,
+        "Discriminativeness",
+        "(c)",
+        legend_loc="center right",
+        legend_bbox=(
+            0.98,
+            0.68,
+        ),
+    )
+
+    axes[
+        2
+    ].set_ylabel(
+        "Mean metric value"
+    )
+
+    # --------------------------------------------------------
+    # Main title
+    # --------------------------------------------------------
 
     fig.suptitle(
         "RQ2: Temperature Sensitivity",
@@ -310,21 +721,25 @@ def figure5_temperature_sensitivity(descriptive):
 
     fig.text(
         0.5,
-        0.03,
-        "Dashed line marks the reference temperature (T=0.2; top_p=1.0).",
+        0.025,
+        "Dashed line marks the reference setting "
+        "(T=0.2; top_p=1.0).",
         ha="center",
         fontsize=10,
     )
 
     fig.subplots_adjust(
-        left=0.08,
-        right=0.98,
-        bottom=0.15,
+        left=0.06,
+        right=0.99,
+        bottom=0.17,
         top=0.84,
-        wspace=0.25,
+        wspace=0.28,
     )
 
-    output = BASE_DIR / "Figure5_RQ2_Decoding_Sensitivity.png"
+    output = (
+        BASE_DIR
+        / "Figure5_RQ2_Decoding_Sensitivity.png"
+    )
 
     fig.savefig(
         output,
@@ -332,48 +747,151 @@ def figure5_temperature_sensitivity(descriptive):
         bbox_inches="tight",
     )
 
-    plt.close(fig)
+    plt.close(
+        fig
+    )
 
     return output
 
 
 # ============================================================
 # Figure 6
-# Overall effect strength heatmap
+# Overall decoding-parameter effect strength
+#
+# Exactly:
+#   9 primary metrics × 2 decoding parameters
+#
+# Cell values:
+#   Kendall's W
+#
+# Stars:
+#   Friedman test significance
 # ============================================================
 
-def figure6_overall_effect_strength(primary):
+def figure6_overall_effect_strength(
+    primary
+):
 
-    d = primary.copy()
+    d = primary[
+        primary[
+            "metric"
+        ].isin(
+            ALL_METRICS
+        )
+    ].copy()
 
-    d["Metric"] = d["metric"].map(METRIC_LABELS)
+    d[
+        "Metric"
+    ] = (
+        d[
+            "metric"
+        ]
+        .map(
+            METRIC_LABELS
+        )
+    )
 
     ordered_labels = [
-        METRIC_LABELS[m]
-        for m in ALL_METRICS
-        if m in d["metric"].values
+        METRIC_LABELS[
+            m
+        ]
+        for m
+        in ALL_METRICS
     ]
 
     d = (
-        d.set_index("Metric")
-        .reindex(ordered_labels)
+        d
+        .set_index(
+            "Metric"
+        )
+        .reindex(
+            ordered_labels
+        )
         .reset_index()
     )
 
-    values = np.column_stack([
-        d["temperature_kendalls_w"].to_numpy(dtype=float),
-        d["top_p_kendalls_w"].to_numpy(dtype=float),
-    ])
+    required_cols = [
+        "temperature_kendalls_w",
+        "top_p_kendalls_w",
+        "temperature_friedman_p",
+        "top_p_friedman_p",
+    ]
 
-    # blue -> pale -> orange
-    cmap = LinearSegmentedColormap.from_list(
-        "rq2_effect_strength",
+    for col in required_cols:
+
+        if col not in d.columns:
+
+            raise ValueError(
+                "Missing required column "
+                "in rq2_primary_table.csv: "
+                f"{col}"
+            )
+
+    if (
+        d[
+            required_cols
+        ]
+        .isna()
+        .any()
+        .any()
+    ):
+
+        print()
+
+        print(
+            "Figure 6 input table:"
+        )
+
+        print(
+            d[
+                [
+                    "Metric"
+                ]
+                + required_cols
+            ]
+            .to_string(
+                index=False
+            )
+        )
+
+        raise ValueError(
+            "Missing values in final "
+            "9-metric Figure 6 input."
+        )
+
+    values = np.column_stack(
         [
-            "#F7F7F7",
-            "#9BB9D3",
-            "#2E6DAA",
-        ],
-        N=256,
+            d[
+                "temperature_kendalls_w"
+            ]
+            .to_numpy(
+                dtype=float
+            ),
+
+            d[
+                "top_p_kendalls_w"
+            ]
+            .to_numpy(
+                dtype=float
+            ),
+        ]
+    )
+
+    # --------------------------------------------------------
+    # Heatmap palette
+    # --------------------------------------------------------
+
+    cmap = (
+        LinearSegmentedColormap
+        .from_list(
+            "rq2_effect_strength",
+            [
+                "#F7F7F7",
+                "#9BB9D3",
+                "#2E6DAA",
+            ],
+            N=256,
+        )
     )
 
     norm = Normalize(
@@ -382,7 +900,10 @@ def figure6_overall_effect_strength(primary):
     )
 
     fig, ax = plt.subplots(
-        figsize=(7.8, 8.0)
+        figsize=(
+            8.4,
+            6.8,
+        )
     )
 
     im = ax.imshow(
@@ -392,29 +913,59 @@ def figure6_overall_effect_strength(primary):
         aspect="auto",
     )
 
-    ax.set_xticks([0, 1])
+    # --------------------------------------------------------
+    # Axis labels
+    # --------------------------------------------------------
 
-    ax.set_xticklabels([
-        "Temperature",
-        "Top-p",
-    ])
+    ax.set_xticks(
+        [
+            0,
+            1,
+        ]
+    )
+
+    ax.set_xticklabels(
+        [
+            "temperature",
+            "top-p",
+        ]
+    )
 
     ax.set_yticks(
-        np.arange(len(d))
+        np.arange(
+            len(
+                d
+            )
+        )
     )
 
     ax.set_yticklabels(
-        d["Metric"]
+        d[
+            "Metric"
+        ]
     )
 
-    # cell borders
+    # --------------------------------------------------------
+    # Cell borders
+    # --------------------------------------------------------
+
     ax.set_xticks(
-        np.arange(-0.5, 2, 1),
+        np.arange(
+            -0.5,
+            2,
+            1,
+        ),
         minor=True,
     )
 
     ax.set_yticks(
-        np.arange(-0.5, len(d), 1),
+        np.arange(
+            -0.5,
+            len(
+                d
+            ),
+            1,
+        ),
         minor=True,
     )
 
@@ -430,31 +981,59 @@ def figure6_overall_effect_strength(primary):
         left=False,
     )
 
-    # significance markers
-    for i in range(len(d)):
+    # --------------------------------------------------------
+    # Cell labels + Friedman significance
+    # --------------------------------------------------------
+
+    for i in range(
+        len(
+            d
+        )
+    ):
 
         temp_p = float(
-            d.loc[i, "temperature_friedman_p"]
+            d.loc[
+                i,
+                "temperature_friedman_p",
+            ]
         )
 
         top_p_p = float(
-            d.loc[i, "top_p_friedman_p"]
+            d.loc[
+                i,
+                "top_p_friedman_p",
+            ]
         )
 
-        ps = [temp_p, top_p_p]
+        ps = [
+            temp_p,
+            top_p_p,
+        ]
 
-        for j in range(2):
+        for j in range(
+            2
+        ):
 
-            value = values[i, j]
+            value = values[
+                i,
+                j,
+            ]
+
+            p = ps[
+                j
+            ]
 
             stars = (
-                "***" if ps[j] < 0.001
-                else "**" if ps[j] < 0.01
-                else "*" if ps[j] < 0.05
+                "***"
+                if p < 0.001
+                else "**"
+                if p < 0.01
+                else "*"
+                if p < 0.05
                 else ""
             )
 
-            color = (
+            text_color = (
                 "white"
                 if value > 0.60
                 else COLOR_TEXT
@@ -463,20 +1042,43 @@ def figure6_overall_effect_strength(primary):
             ax.text(
                 j,
                 i,
-                f"{value:.3f}{stars}",
+                f"{value:.3f}"
+                f"{stars}",
                 ha="center",
                 va="center",
-                fontsize=9,
+                fontsize=9.4,
                 fontweight=(
                     "bold"
                     if stars
                     else "normal"
                 ),
-                color=color,
+                color=text_color,
             )
 
+    # --------------------------------------------------------
+    # Dimension separators
+    # --------------------------------------------------------
+
+    ax.axhline(
+        2.5,
+        color=COLOR_SPINE,
+        linewidth=1.3,
+        alpha=0.8,
+    )
+
+    ax.axhline(
+        5.5,
+        color=COLOR_SPINE,
+        linewidth=1.3,
+        alpha=0.8,
+    )
+
+    # --------------------------------------------------------
+    # Title / colorbar
+    # --------------------------------------------------------
+
     ax.set_title(
-        "RQ2: Overall Decoding-Parameter Effects",
+        "RQ2: Overall Decoding-Parameter Effect Strength",
         fontsize=16,
         fontweight="bold",
         pad=12,
@@ -504,10 +1106,10 @@ def figure6_overall_effect_strength(primary):
     )
 
     fig.subplots_adjust(
-        left=0.30,
+        left=0.36,
         right=0.90,
-        bottom=0.08,
-        top=0.92,
+        bottom=0.09,
+        top=0.91,
     )
 
     output = (
@@ -521,7 +1123,9 @@ def figure6_overall_effect_strength(primary):
         bbox_inches="tight",
     )
 
-    plt.close(fig)
+    plt.close(
+        fig
+    )
 
     return output
 
@@ -534,23 +1138,42 @@ def main():
 
     set_global_style()
 
-    primary, friedman, descriptive = load_data()
+    (
+        primary,
+        friedman,
+        descriptive,
+    ) = load_data()
+
+    validate_final_design(
+        primary,
+        descriptive,
+    )
 
     outputs = [
+
         figure5_temperature_sensitivity(
             descriptive
         ),
+
         figure6_overall_effect_strength(
             primary
         ),
     ]
 
     print()
-    print("RQ2 publication figures generated:")
+
+    print(
+        "RQ2 publication figures "
+        "generated successfully:"
+    )
+
     print()
 
     for output in outputs:
-        print(f"  {output}")
+
+        print(
+            f"  {output}"
+        )
 
     print()
 

@@ -8,52 +8,52 @@ from matplotlib.lines import Line2D
 
 
 # ============================================================
-# RQ1 publication figures
+# Paths
 # ============================================================
-#
-# Place this script in:
-#
-#   results/publication_master/rq1/
-#
-# Required CSV files:
-#
-#   table_rq1_compact.csv
-#   table_rq1_primary_overall.csv
-#
-# Output:
-#
-#   Figure2_RQ1_Repeat_Run_Stability.png
-#   Figure3_RQ1_Stability_Discriminativeness_Tradeoff.png
-#   Figure4_RQ1_Paired_Traditional_vs_LLM_Effects.png
-#
-# ============================================================
-
 
 BASE_DIR = Path(__file__).resolve().parent
 
 COMPACT_CSV = BASE_DIR / "table_rq1_compact.csv"
 PRIMARY_CSV = BASE_DIR / "table_rq1_primary_overall.csv"
 
+TRAD_DISCRIM_CSV = (
+    BASE_DIR
+    / "rq1_raw"
+    / "traditional"
+    / "metrics"
+    / "discriminativeness.csv"
+)
+
+LLM_DISCRIM_CSV = (
+    BASE_DIR
+    / "rq1_raw"
+    / "qwen36"
+    / "metrics"
+    / "discriminativeness.csv"
+)
+
 DPI = 400
 
 
 # ============================================================
-# Unified publication palette
+# Publication palette
 # ============================================================
 
-COLOR_TRAD = "#214F7A"          # deep navy blue
-COLOR_LLM = "#D97706"           # restrained amber/orange
-COLOR_CONNECTOR = "#9CA3AF"     # neutral grey
+COLOR_TRAD = "#214F7A"
+COLOR_LLM = "#D97706"
+
 COLOR_GRID = "#D9DEE5"
 COLOR_TEXT = "#202124"
 COLOR_SPINE = "#4B5563"
-
-COLOR_LIME_HIGHLIGHT = "#F7F4EC"
 
 HEAT_NEG = "#2E6DAA"
 HEAT_ZERO = "#F7F7F7"
 HEAT_POS = "#C46A23"
 
+
+# ============================================================
+# Methods
+# ============================================================
 
 METHOD_ORDER = [
     "Counterfactual",
@@ -67,49 +67,140 @@ METHOD_LABELS = {
     "kernelshap": "KernelSHAP",
     "lime": "LIME",
     "lofo": "LOFO",
+    "llm_counterfactual": "Counterfactual",
+    "llm_kernelshap": "KernelSHAP",
+    "llm_lime": "LIME",
+    "llm_lofo": "LOFO",
 }
 
+
+# ============================================================
+# Final 3 × 3 RQ1 metric design
+# ============================================================
 
 STABILITY_METRICS = [
     "Overlap@K",
     "Rank Agreement@K",
     "Direction Agreement@K",
-    "Score Stability",
+]
+
+ALIGNMENT_METRICS = [
+    "Direction Consistency Rate",
+    "Meaningful-Effect Rate",
+    "Mean |Δp|",
+]
+
+DISCRIM_METRICS = [
+    "Normalized Feature Entropy",
+    "Between-instance Jaccard",
+    "Instance-IDF Specificity",
 ]
 
 
-DIRECTIONAL_METRICS = [
+# ============================================================
+# Eight metrics with instance-level paired comparison
+#
+# Normalized Feature Entropy is directional
+# under the operationalized construct used in this study,
+# but it is computed at dataset-category-method level,
+# not at the 160-instance paired level.
+# ============================================================
+
+PAIRED_METRICS = [
     "Overlap@K",
     "Rank Agreement@K",
     "Direction Agreement@K",
-    "Score Stability",
-    "Direction Consistency",
-    "Meaningful Effect",
+    "Direction Consistency Rate",
+    "Meaningful-Effect Rate",
     "Mean |Δp|",
-    "Within-instance Jaccard",
     "Between-instance Jaccard",
-    "Instance-IDF",
-    "Separability Gap",
+    "Instance-IDF Specificity",
 ]
 
 
-METRIC_LABELS = {
-    "overlap_at_k": "Overlap@K",
-    "rank_agreement_at_k": "Rank Agreement@K",
-    "direction_agreement_at_k": "Direction Agreement@K",
-    "score_stability": "Score Stability",
-    "direction_consistency_rate": "Direction Consistency",
-    "meaningful_effect_rate": "Meaningful Effect",
-    "mean_absolute_delta_probability": "Mean |Δp|",
-    "pairwise_jaccard_within_instance": "Within-instance Jaccard",
-    "pairwise_jaccard_between_instance": "Between-instance Jaccard",
-    "instance_idf_specificity": "Instance-IDF",
-    "separability_gap": "Separability Gap",
+# ============================================================
+# Metric aliases in compact table
+#
+# Canonical names are the final manuscript names.
+# Older labels are retained only for backward compatibility
+# with historical CSV files.
+# ============================================================
+
+METRIC_ALIASES = {
+
+    "Overlap@K": [
+        "Overlap@K",
+    ],
+
+    "Rank Agreement@K": [
+        "Rank Agreement@K",
+    ],
+
+    "Direction Agreement@K": [
+        "Direction Agreement@K",
+    ],
+
+    "Direction Consistency Rate": [
+        "Direction Consistency Rate",
+        "Direction Consistency",
+    ],
+
+    "Meaningful-Effect Rate": [
+        "Meaningful-Effect Rate",
+        "Meaningful Effect Rate",
+        "Meaningful Effect",
+    ],
+
+    "Mean |Δp|": [
+        "Mean |Δp|",
+        "Mean |Delta p|",
+    ],
+
+    "Between-instance Jaccard": [
+        "Between-instance Jaccard",
+    ],
+
+    "Instance-IDF Specificity": [
+        "Instance-IDF Specificity",
+        "Instance-IDF",
+    ],
 }
 
 
 # ============================================================
-# Global plotting style
+# Mapping used in primary paired-comparison table
+# ============================================================
+
+PRIMARY_METRIC_LABELS = {
+
+    "overlap_at_k":
+        "Overlap@K",
+
+    "rank_agreement_at_k":
+        "Rank Agreement@K",
+
+    "direction_agreement_at_k":
+        "Direction Agreement@K",
+
+    "direction_consistency_rate":
+        "Direction Consistency Rate",
+
+    "meaningful_effect_rate":
+        "Meaningful-Effect Rate",
+
+    "mean_absolute_delta_probability":
+        "Mean |Δp|",
+
+    "pairwise_jaccard_between_instance":
+        "Between-instance Jaccard",
+
+    "instance_idf_specificity":
+        "Instance-IDF Specificity",
+}
+
+
+# ============================================================
+# Global style
 # ============================================================
 
 def set_global_style():
@@ -117,12 +208,10 @@ def set_global_style():
     plt.rcParams.update({
 
         "font.family": "DejaVu Sans",
-
         "font.size": 11,
 
         "axes.titlesize": 13,
         "axes.titleweight": "bold",
-
         "axes.labelsize": 12,
 
         "axes.edgecolor": COLOR_SPINE,
@@ -133,85 +222,92 @@ def set_global_style():
 
         "text.color": COLOR_TEXT,
         "axes.labelcolor": COLOR_TEXT,
-
         "xtick.color": COLOR_TEXT,
         "ytick.color": COLOR_TEXT,
 
-        "legend.fontsize": 11,
+        "legend.fontsize": 10,
         "legend.frameon": False,
 
         "figure.facecolor": "white",
         "axes.facecolor": "white",
-
         "savefig.facecolor": "white",
-
-        "savefig.bbox": "tight",
     })
 
 
 # ============================================================
-# Data loading
+# Load data
 # ============================================================
 
 def load_data():
 
-    if not COMPACT_CSV.exists():
-        raise FileNotFoundError(
-            f"Missing file: {COMPACT_CSV}"
-        )
+    required = [
+        COMPACT_CSV,
+        PRIMARY_CSV,
+        TRAD_DISCRIM_CSV,
+        LLM_DISCRIM_CSV,
+    ]
 
-    if not PRIMARY_CSV.exists():
-        raise FileNotFoundError(
-            f"Missing file: {PRIMARY_CSV}"
-        )
+    for path in required:
 
-    compact = pd.read_csv(COMPACT_CSV)
-    primary = pd.read_csv(PRIMARY_CSV)
+        if not path.exists():
 
-    compact_required = {
-        "Metric",
-        "Method",
-        "Traditional Mean",
-        "Qwen3.6 Mean",
-    }
+            raise FileNotFoundError(
+                f"Missing required file:\n{path}"
+            )
 
-    missing = compact_required - set(compact.columns)
+    compact = pd.read_csv(
+        COMPACT_CSV
+    )
 
-    if missing:
-        raise ValueError(
-            "table_rq1_compact.csv missing columns: "
-            f"{sorted(missing)}"
-        )
+    primary = pd.read_csv(
+        PRIMARY_CSV
+    )
 
-    primary_required = {
-        "metric",
-        "traditional_method",
-        "metric_direction",
-        "improvement_signed",
-    }
+    trad_discrim = pd.read_csv(
+        TRAD_DISCRIM_CSV
+    )
 
-    missing = primary_required - set(primary.columns)
+    llm_discrim = pd.read_csv(
+        LLM_DISCRIM_CSV
+    )
 
-    if missing:
-        raise ValueError(
-            "table_rq1_primary_overall.csv missing columns: "
-            f"{sorted(missing)}"
-        )
-
-    return compact, primary
+    return (
+        compact,
+        primary,
+        trad_discrim,
+        llm_discrim,
+    )
 
 
 # ============================================================
-# Helper functions
+# Helpers
 # ============================================================
 
 def clean_axis(ax):
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    ax.spines[
+        "top"
+    ].set_visible(
+        False
+    )
 
-    ax.spines["left"].set_color(COLOR_SPINE)
-    ax.spines["bottom"].set_color(COLOR_SPINE)
+    ax.spines[
+        "right"
+    ].set_visible(
+        False
+    )
+
+    ax.spines[
+        "left"
+    ].set_color(
+        COLOR_SPINE
+    )
+
+    ax.spines[
+        "bottom"
+    ].set_color(
+        COLOR_SPINE
+    )
 
     ax.grid(
         axis="y",
@@ -220,7 +316,225 @@ def clean_axis(ax):
         alpha=0.55,
     )
 
-    ax.set_axisbelow(True)
+    ax.set_axisbelow(
+        True
+    )
+
+
+def resolve_metric_rows(
+    compact,
+    canonical_metric,
+):
+
+    aliases = (
+        METRIC_ALIASES[
+            canonical_metric
+        ]
+    )
+
+    rows = compact[
+        compact[
+            "Metric"
+        ].isin(
+            aliases
+        )
+    ].copy()
+
+    if rows.empty:
+
+        available = sorted(
+            compact[
+                "Metric"
+            ]
+            .dropna()
+            .unique()
+        )
+
+        raise ValueError(
+            f"\nCannot find metric: "
+            f"{canonical_metric}\n"
+            f"Accepted aliases: "
+            f"{aliases}\n"
+            f"Available metrics: "
+            f"{available}\n"
+        )
+
+    return rows
+
+
+def compact_metric_values(
+    compact,
+    metric,
+):
+
+    rows = resolve_metric_rows(
+        compact,
+        metric,
+    )
+
+    d = (
+        rows
+        .drop_duplicates(
+            subset=[
+                "Method"
+            ]
+        )
+        .set_index(
+            "Method"
+        )
+        .reindex(
+            METHOD_ORDER
+        )
+    )
+
+    cols = [
+        "Traditional Mean",
+        "Qwen3.6 Mean",
+    ]
+
+    if (
+        d[cols]
+        .isna()
+        .any()
+        .any()
+    ):
+
+        raise ValueError(
+            f"Missing values for metric: "
+            f"{metric}"
+        )
+
+    trad = (
+        d[
+            "Traditional Mean"
+        ]
+        .astype(float)
+        .to_numpy()
+    )
+
+    llm = (
+        d[
+            "Qwen3.6 Mean"
+        ]
+        .astype(float)
+        .to_numpy()
+    )
+
+    return trad, llm
+
+
+def weighted_method_mean(
+    df,
+    value_col,
+):
+
+    d = df.copy()
+
+    d[
+        "Method"
+    ] = (
+        d[
+            "method"
+        ]
+        .map(
+            METHOD_LABELS
+        )
+    )
+
+    d = d[
+        d[
+            "Method"
+        ].isin(
+            METHOD_ORDER
+        )
+    ].copy()
+
+    result = {}
+
+    for method in METHOD_ORDER:
+
+        g = d[
+            d[
+                "Method"
+            ].eq(
+                method
+            )
+        ].copy()
+
+        if g.empty:
+
+            raise ValueError(
+                f"No data found for "
+                f"{method}"
+            )
+
+        values = (
+            g[
+                value_col
+            ]
+            .astype(float)
+            .to_numpy()
+        )
+
+        if (
+            "n_explanations"
+            in g.columns
+            and
+            g[
+                "n_explanations"
+            ]
+            .notna()
+            .all()
+        ):
+
+            weights = (
+                g[
+                    "n_explanations"
+                ]
+                .astype(float)
+                .to_numpy()
+            )
+
+            mean_value = np.average(
+                values,
+                weights=weights,
+            )
+
+        else:
+
+            mean_value = np.mean(
+                values
+            )
+
+        result[
+            method
+        ] = mean_value
+
+    return np.array(
+        [
+            result[m]
+            for m in METHOD_ORDER
+        ],
+        dtype=float,
+    )
+
+
+def entropy_values(
+    trad_discrim,
+    llm_discrim,
+):
+
+    trad = weighted_method_mean(
+        trad_discrim,
+        "normalized_feature_entropy",
+    )
+
+    llm = weighted_method_mean(
+        llm_discrim,
+        "normalized_feature_entropy",
+    )
+
+    return trad, llm
 
 
 def p_to_star(p):
@@ -253,10 +567,88 @@ def find_p_column(df):
     ]
 
     for col in candidates:
+
         if col in df.columns:
+
             return col
 
     return None
+
+
+# ============================================================
+# Generic grouped-bar drawing
+# ============================================================
+
+def draw_grouped_bars(
+    ax,
+    trad,
+    llm,
+    title,
+    panel_label,
+    ylim=None,
+):
+
+    x = np.arange(
+        len(
+            METHOD_ORDER
+        )
+    )
+
+    width = 0.34
+
+    ax.bar(
+        x - width / 2,
+        trad,
+        width,
+        color=COLOR_TRAD,
+        edgecolor="white",
+        linewidth=0.7,
+    )
+
+    ax.bar(
+        x + width / 2,
+        llm,
+        width,
+        color=COLOR_LLM,
+        edgecolor="white",
+        linewidth=0.7,
+    )
+
+    ax.set_title(
+        title,
+        fontsize=12,
+        pad=8,
+    )
+
+    ax.set_xticks(
+        x
+    )
+
+    ax.set_xticklabels(
+        METHOD_ORDER,
+        rotation=22,
+        ha="right",
+    )
+
+    if ylim is not None:
+
+        ax.set_ylim(
+            *ylim
+        )
+
+    clean_axis(
+        ax
+    )
+
+    ax.text(
+        -0.12,
+        1.07,
+        panel_label,
+        transform=ax.transAxes,
+        fontsize=11.5,
+        fontweight="bold",
+        va="top",
+    )
 
 
 # ============================================================
@@ -264,102 +656,50 @@ def find_p_column(df):
 # Repeat-run stability
 # ============================================================
 
-def figure2_repeat_run_stability(compact):
+def figure2_repeat_run_stability(
+    compact
+):
 
     fig, axes = plt.subplots(
-        2,
-        2,
-        figsize=(11.0, 7.8),
+        1,
+        3,
+        figsize=(12.2, 4.7),
         sharey=True,
     )
 
-    axes = axes.flatten()
+    panel_labels = [
+        "(a)",
+        "(b)",
+        "(c)",
+    ]
 
-    x = np.arange(len(METHOD_ORDER))
-
-    width = 0.34
-
-    panel_labels = ["(a)", "(b)", "(c)", "(d)"]
-
-    for i, (ax, metric) in enumerate(
-        zip(axes, STABILITY_METRICS)
+    for (
+        ax,
+        metric,
+        panel,
+    ) in zip(
+        axes,
+        STABILITY_METRICS,
+        panel_labels,
     ):
 
-        d = (
-            compact[
-                compact["Metric"].eq(metric)
-            ]
-            .set_index("Method")
-            .reindex(METHOD_ORDER)
-        )
-
-        trad = (
-            d["Traditional Mean"]
-            .astype(float)
-            .to_numpy()
-        )
-
-        llm = (
-            d["Qwen3.6 Mean"]
-            .astype(float)
-            .to_numpy()
-        )
-
-        ax.bar(
-            x - width / 2,
-            trad,
-            width,
-            color=COLOR_TRAD,
-            edgecolor="white",
-            linewidth=0.7,
-        )
-
-        ax.bar(
-            x + width / 2,
-            llm,
-            width,
-            color=COLOR_LLM,
-            edgecolor="white",
-            linewidth=0.7,
-        )
-
-        ax.set_title(
-            metric,
-            pad=8,
-            fontsize=13,
-        )
-
-        ax.set_xticks(x)
-
-        ax.set_xticklabels(
-            METHOD_ORDER,
-            rotation=18,
-            ha="right",
-        )
-
-        ax.set_ylim(
-            0.72,
-            1.02,
-        )
-
-        ax.set_yticks(
-            np.arange(
-                0.75,
-                1.01,
-                0.05,
+        trad, llm = (
+            compact_metric_values(
+                compact,
+                metric,
             )
         )
 
-        clean_axis(ax)
-
-        ax.text(
-            -0.14,
-            1.07,
-            panel_labels[i],
-            transform=ax.transAxes,
-            fontsize=12,
-            fontweight="bold",
-            va="top",
+        draw_grouped_bars(
+            ax,
+            trad,
+            llm,
+            metric,
+            panel,
+            ylim=(
+                0.80,
+                1.015,
+            ),
         )
 
     legend_items = [
@@ -385,13 +725,249 @@ def figure2_repeat_run_stability(compact):
         "RQ1: Repeat-Run Stability",
         fontsize=17,
         fontweight="bold",
+        y=0.98,
+    )
+
+    fig.legend(
+        handles=legend_items,
+        loc="upper center",
+        bbox_to_anchor=(
+            0.5,
+            0.90,
+        ),
+        ncol=2,
+        columnspacing=2.0,
+    )
+
+    fig.tight_layout(
+        rect=[
+            0.02,
+            0.03,
+            0.99,
+            0.82,
+        ]
+    )
+
+    output = (
+        BASE_DIR
+        / "Figure2_RQ1_Repeat_Run_Stability.png"
+    )
+
+    fig.savefig(
+        output,
+        dpi=DPI,
+        bbox_inches="tight",
+    )
+
+    plt.close(
+        fig
+    )
+
+    return output
+
+
+# ============================================================
+# Figure 3
+# Model-response alignment + discriminativeness
+# ============================================================
+
+def figure3_alignment_and_discriminativeness(
+    compact,
+    trad_discrim,
+    llm_discrim,
+):
+
+    fig, axes = plt.subplots(
+        2,
+        3,
+        figsize=(12.6, 8.1),
+    )
+
+    panels = [
+        "(a)",
+        "(b)",
+        "(c)",
+        "(d)",
+        "(e)",
+        "(f)",
+    ]
+
+    # --------------------------------------------------------
+    # Row 1:
+    # Model-response alignment
+    # --------------------------------------------------------
+
+    alignment_limits = {
+
+        "Direction Consistency Rate":
+            (
+                0.55,
+                1.00,
+            ),
+
+        "Meaningful-Effect Rate":
+            (
+                0.60,
+                0.90,
+            ),
+
+        "Mean |Δp|":
+            (
+                0.08,
+                0.14,
+            ),
+    }
+
+    for j, metric in enumerate(
+        ALIGNMENT_METRICS
+    ):
+
+        trad, llm = (
+            compact_metric_values(
+                compact,
+                metric,
+            )
+        )
+
+        draw_grouped_bars(
+            axes[
+                0,
+                j,
+            ],
+            trad,
+            llm,
+            metric,
+            panels[
+                j
+            ],
+            ylim=(
+                alignment_limits[
+                    metric
+                ]
+            ),
+        )
+
+    # --------------------------------------------------------
+    # Row 2A:
+    # Normalized Feature Entropy
+    # --------------------------------------------------------
+
+    (
+        entropy_trad,
+        entropy_llm,
+    ) = entropy_values(
+        trad_discrim,
+        llm_discrim,
+    )
+
+    draw_grouped_bars(
+        axes[
+            1,
+            0,
+        ],
+        entropy_trad,
+        entropy_llm,
+        "Normalized Feature Entropy",
+        panels[
+            3
+        ],
+        ylim=(
+            0.0,
+            1.0,
+        ),
+    )
+
+    # --------------------------------------------------------
+    # Row 2B:
+    # Between-instance Jaccard
+    # --------------------------------------------------------
+
+    trad, llm = (
+        compact_metric_values(
+            compact,
+            "Between-instance Jaccard",
+        )
+    )
+
+    draw_grouped_bars(
+        axes[
+            1,
+            1,
+        ],
+        trad,
+        llm,
+        "Between-instance Jaccard",
+        panels[
+            4
+        ],
+        ylim=(
+            0.0,
+            0.90,
+        ),
+    )
+
+    # --------------------------------------------------------
+    # Row 2C:
+    # Instance-IDF Specificity
+    # --------------------------------------------------------
+
+    trad, llm = (
+        compact_metric_values(
+            compact,
+            "Instance-IDF Specificity",
+        )
+    )
+
+    draw_grouped_bars(
+        axes[
+            1,
+            2,
+        ],
+        trad,
+        llm,
+        "Instance-IDF Specificity",
+        panels[
+            5
+        ],
+        ylim=(
+            0.0,
+            0.35,
+        ),
+    )
+
+    legend_items = [
+
+        Line2D(
+            [0],
+            [0],
+            color=COLOR_TRAD,
+            lw=8,
+            label="Traditional",
+        ),
+
+        Line2D(
+            [0],
+            [0],
+            color=COLOR_LLM,
+            lw=8,
+            label="LLM-informed",
+        ),
+    ]
+
+    fig.suptitle(
+        "RQ1: Model-Response Alignment and Discriminativeness",
+        fontsize=17,
+        fontweight="bold",
         y=0.985,
     )
 
     fig.legend(
         handles=legend_items,
         loc="upper center",
-        bbox_to_anchor=(0.5, 0.945),
+        bbox_to_anchor=(
+            0.5,
+            0.935,
+        ),
         ncol=2,
         columnspacing=2.0,
     )
@@ -399,583 +975,168 @@ def figure2_repeat_run_stability(compact):
     fig.tight_layout(
         rect=[
             0.03,
-            0.04,
+            0.03,
             0.99,
             0.89,
-        ]
+        ],
+        h_pad=2.5,
+        w_pad=1.3,
     )
-
-    output = (
-        BASE_DIR /
-        "Figure2_RQ1_Repeat_Run_Stability.png"
-    )
-
-    fig.savefig(
-        output,
-        dpi=DPI,
-    )
-
-    plt.close(fig)
-
-    return output
-
-
-# ============================================================
-# Figure 3
-# NEW DESIGN:
-# Two-panel paired dumbbell chart
-# ============================================================
-
-def figure3_stability_discriminativeness_tradeoff(compact):
-    """
-    Figure 3:
-    Stability–Discriminativeness Trade-off
-
-    Panel (a): mean composite of four repeat-run stability metrics
-    Panel (b): Separability Gap
-
-    Traditional = blue circle
-    LLM-informed = orange square
-    Delta = LLM-informed - Traditional
-    """
-
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    from matplotlib.lines import Line2D
-
-    # ========================================================
-    # Prepare data
-    # ========================================================
-
-    records = []
-
-    for method in METHOD_ORDER:
-
-        method_rows = compact[
-            compact["Method"].eq(method)
-        ]
-
-        stability_rows = method_rows[
-            method_rows["Metric"].isin(STABILITY_METRICS)
-        ]
-
-        if len(stability_rows) != 4:
-            raise ValueError(
-                f"Expected 4 stability metrics for {method}, "
-                f"but found {len(stability_rows)}."
-            )
-
-        stability_trad = (
-            stability_rows["Traditional Mean"]
-            .astype(float)
-            .mean()
-        )
-
-        stability_llm = (
-            stability_rows["Qwen3.6 Mean"]
-            .astype(float)
-            .mean()
-        )
-
-        sep_row = method_rows[
-            method_rows["Metric"].eq("Separability Gap")
-        ]
-
-        if len(sep_row) != 1:
-            raise ValueError(
-                f"Expected one Separability Gap row for {method}."
-            )
-
-        sep_trad = float(
-            sep_row["Traditional Mean"].iloc[0]
-        )
-
-        sep_llm = float(
-            sep_row["Qwen3.6 Mean"].iloc[0]
-        )
-
-        records.append(
-            {
-                "Method": method,
-                "Stability Traditional": stability_trad,
-                "Stability LLM": stability_llm,
-                "Separability Traditional": sep_trad,
-                "Separability LLM": sep_llm,
-            }
-        )
-
-    df = pd.DataFrame(records)
-
-    # Counterfactual at top
-    y = np.arange(len(METHOD_ORDER))[::-1]
-
-    # ========================================================
-    # Figure
-    # ========================================================
-
-    fig, (ax1, ax2) = plt.subplots(
-        1,
-        2,
-        figsize=(11.8, 6.8)
-    )
-
-    # IMPORTANT:
-    # Reserve a large dedicated title/legend band.
-    fig.subplots_adjust(
-        left=0.12,
-        right=0.985,
-        bottom=0.12,
-        top=0.73,
-        wspace=0.23,
-    )
-
-    # ========================================================
-    # LIME highlight
-    # ========================================================
-
-    lime_idx = METHOD_ORDER.index("LIME")
-    lime_y = y[lime_idx]
-
-    for ax in (ax1, ax2):
-
-        ax.axhspan(
-            lime_y - 0.40,
-            lime_y + 0.40,
-            color=COLOR_LIME_HIGHLIGHT,
-            alpha=0.35,
-            zorder=0,
-        )
-
-    # ========================================================
-    # Panel A — Stability
-    # ========================================================
-
-    stability_trad = (
-        df["Stability Traditional"]
-        .to_numpy(dtype=float)
-    )
-
-    stability_llm = (
-        df["Stability LLM"]
-        .to_numpy(dtype=float)
-    )
-
-    for i in range(len(df)):
-
-        # connector
-        ax1.plot(
-            [stability_llm[i], stability_trad[i]],
-            [y[i], y[i]],
-            color=COLOR_CONNECTOR,
-            linewidth=2.0,
-            zorder=1,
-        )
-
-        delta = (
-            stability_llm[i]
-            - stability_trad[i]
-        )
-
-        mid_x = (
-            stability_llm[i]
-            + stability_trad[i]
-        ) / 2
-
-        # Put delta close to the connector.
-        # Top row is placed BELOW the line to avoid title collision.
-        if i == 0:
-            delta_y = y[i] - 0.18
-            va = "top"
-        else:
-            delta_y = y[i] + 0.15
-            va = "bottom"
-
-        ax1.text(
-            mid_x,
-            delta_y,
-            rf"$\Delta$={delta:+.3f}",
-            ha="center",
-            va=va,
-            fontsize=9.5,
-            color=COLOR_TEXT,
-            fontweight=(
-                "bold"
-                if METHOD_ORDER[i] == "LIME"
-                else "normal"
-            ),
-            zorder=4,
-        )
-
-    # points
-    ax1.scatter(
-        stability_trad,
-        y,
-        s=135,
-        marker="o",
-        color=COLOR_TRAD,
-        edgecolor="white",
-        linewidth=0.9,
-        zorder=3,
-    )
-
-    ax1.scatter(
-        stability_llm,
-        y,
-        s=135,
-        marker="s",
-        color=COLOR_LLM,
-        edgecolor="white",
-        linewidth=0.9,
-        zorder=3,
-    )
-
-    ax1.set_title(
-        "(a) Repeat-run stability",
-        fontsize=13,
-        fontweight="bold",
-        pad=7,
-    )
-
-    ax1.set_xlabel(
-        "Stability composite",
-        fontsize=12,
-        labelpad=8,
-    )
-
-    ax1.set_xlim(
-        0.83,
-        1.025,
-    )
-
-    ax1.set_yticks(y)
-
-    ax1.set_yticklabels(
-        METHOD_ORDER,
-        fontsize=11,
-    )
-
-    ax1.tick_params(
-        axis="x",
-        labelsize=10,
-    )
-
-    ax1.grid(
-        axis="x",
-        color=COLOR_GRID,
-        linewidth=0.7,
-        alpha=0.55,
-    )
-
-    ax1.grid(
-        axis="y",
-        visible=False,
-    )
-
-    ax1.spines["top"].set_visible(False)
-    ax1.spines["right"].set_visible(False)
-
-    # ========================================================
-    # Panel B — Separability
-    # ========================================================
-
-    sep_trad = (
-        df["Separability Traditional"]
-        .to_numpy(dtype=float)
-    )
-
-    sep_llm = (
-        df["Separability LLM"]
-        .to_numpy(dtype=float)
-    )
-
-    for i in range(len(df)):
-
-        ax2.plot(
-            [sep_trad[i], sep_llm[i]],
-            [y[i], y[i]],
-            color=COLOR_CONNECTOR,
-            linewidth=2.0,
-            zorder=1,
-        )
-
-        delta = (
-            sep_llm[i]
-            - sep_trad[i]
-        )
-
-        mid_x = (
-            sep_trad[i]
-            + sep_llm[i]
-        ) / 2
-
-        # Again: keep top-row annotation away from title.
-        if i == 0:
-            delta_y = y[i] - 0.18
-            va = "top"
-        else:
-            delta_y = y[i] + 0.15
-            va = "bottom"
-
-        ax2.text(
-            mid_x,
-            delta_y,
-            rf"$\Delta$={delta:+.3f}",
-            ha="center",
-            va=va,
-            fontsize=9.5,
-            color=COLOR_TEXT,
-            fontweight=(
-                "bold"
-                if METHOD_ORDER[i] == "LIME"
-                else "normal"
-            ),
-            zorder=4,
-        )
-
-    ax2.scatter(
-        sep_trad,
-        y,
-        s=135,
-        marker="o",
-        color=COLOR_TRAD,
-        edgecolor="white",
-        linewidth=0.9,
-        zorder=3,
-    )
-
-    ax2.scatter(
-        sep_llm,
-        y,
-        s=135,
-        marker="s",
-        color=COLOR_LLM,
-        edgecolor="white",
-        linewidth=0.9,
-        zorder=3,
-    )
-
-    ax2.set_title(
-        "(b) Instance discriminativeness",
-        fontsize=13,
-        fontweight="bold",
-        pad=7,
-    )
-
-    ax2.set_xlabel(
-        "Separability Gap",
-        fontsize=12,
-        labelpad=8,
-    )
-
-    ax2.set_xlim(
-        0.0,
-        0.74,
-    )
-
-    ax2.set_yticks(y)
-
-    # Do not repeat method names
-    ax2.set_yticklabels([])
-
-    ax2.tick_params(
-        axis="y",
-        length=0,
-    )
-
-    ax2.tick_params(
-        axis="x",
-        labelsize=10,
-    )
-
-    ax2.grid(
-        axis="x",
-        color=COLOR_GRID,
-        linewidth=0.7,
-        alpha=0.55,
-    )
-
-    ax2.grid(
-        axis="y",
-        visible=False,
-    )
-
-    ax2.spines["top"].set_visible(False)
-    ax2.spines["right"].set_visible(False)
-
-    # ========================================================
-    # Legend
-    # ========================================================
-
-    legend_elements = [
-
-        Line2D(
-            [0],
-            [0],
-            marker="o",
-            linestyle="None",
-            markerfacecolor=COLOR_TRAD,
-            markeredgecolor="white",
-            markeredgewidth=0.8,
-            markersize=10,
-            label="Traditional",
-        ),
-
-        Line2D(
-            [0],
-            [0],
-            marker="s",
-            linestyle="None",
-            markerfacecolor=COLOR_LLM,
-            markeredgecolor="white",
-            markeredgewidth=0.8,
-            markersize=10,
-            label="LLM-informed",
-        ),
-
-    ]
-
-    # ========================================================
-    # Dedicated title hierarchy
-    # ========================================================
-
-    # Main title — highest row
-    fig.suptitle(
-        "RQ1: Stability–Discriminativeness Trade-off",
-        fontsize=17,
-        fontweight="bold",
-        x=0.5,
-        y=0.975,
-    )
-
-    # Legend — dedicated second row
-    fig.legend(
-        handles=legend_elements,
-        loc="upper center",
-        bbox_to_anchor=(0.5, 0.895),
-        ncol=2,
-        frameon=False,
-        columnspacing=2.2,
-        handletextpad=0.6,
-        fontsize=11,
-    )
-
-    # IMPORTANT:
-    # Do NOT call tight_layout() here.
-
-    # ========================================================
-    # Save
-    # ========================================================
 
     output = (
         BASE_DIR
-        / "Figure3_RQ1_Stability_Discriminativeness_Tradeoff.png"
+        / "Figure3_RQ1_Alignment_and_Discriminativeness.png"
     )
 
     fig.savefig(
         output,
         dpi=DPI,
         bbox_inches="tight",
-        facecolor="white",
     )
 
-    plt.close(fig)
+    plt.close(
+        fig
+    )
 
     return output
 
 
 # ============================================================
 # Figure 4
-# Direction-corrected paired effect heatmap
+# Direction-corrected mean differences
+#
+# IMPORTANT:
+#
+# The plotted values come from "improvement_signed".
+# They represent direction-corrected paired mean differences,
+# NOT rank-biserial correlations or standardized effect sizes.
+#
+# Positive:
+#   LLM-informed version is numerically more favorable
+#   under the predefined metric direction.
+#
+# Negative:
+#   Traditional version is numerically more favorable.
+#
+# Between-instance Jaccard is direction-reversed because
+# lower values represent less cross-instance overlap.
 # ============================================================
 
-def figure4_paired_effects(primary):
+def figure4_direction_corrected_mean_differences(
+    primary
+):
 
     d = primary.copy()
 
-    d["Metric"] = (
-        d["metric"]
-        .map(METRIC_LABELS)
+    d[
+        "Metric"
+    ] = (
+        d[
+            "metric"
+        ]
+        .map(
+            PRIMARY_METRIC_LABELS
+        )
     )
 
-    d["Method"] = (
-        d["traditional_method"]
-        .map(METHOD_LABELS)
+    d[
+        "Method"
+    ] = (
+        d[
+            "traditional_method"
+        ]
+        .map(
+            METHOD_LABELS
+        )
     )
-
 
     d = d.loc[
-
-        d["Metric"].isin(
-            DIRECTIONAL_METRICS
+        (
+            d[
+                "Metric"
+            ].isin(
+                PAIRED_METRICS
+            )
         )
-
-        & d["Method"].isin(
-            METHOD_ORDER
+        &
+        (
+            d[
+                "Method"
+            ].isin(
+                METHOD_ORDER
+            )
         )
-
-        & d[
-            "metric_direction"
-        ].ne("descriptive")
-
     ].copy()
 
-
     matrix = (
-
         d.pivot(
             index="Metric",
             columns="Method",
             values="improvement_signed",
         )
-
         .reindex(
-            index=DIRECTIONAL_METRICS,
+            index=PAIRED_METRICS,
             columns=METHOD_ORDER,
         )
-
     )
 
+    if (
+        matrix
+        .isna()
+        .any()
+        .any()
+    ):
 
-    if matrix.isna().any().any():
-
-        raise ValueError(
-            "Missing values detected in "
-            "paired-effect heatmap matrix."
+        print(
+            "\nFigure 4 "
+            "direction-corrected "
+            "mean-difference matrix:"
         )
 
+        print(
+            matrix
+        )
 
-    p_col = find_p_column(d)
+        raise ValueError(
+            "\nMissing direction-corrected "
+            "mean-difference values.\n"
+            "Check "
+            "table_rq1_primary_overall.csv."
+        )
+
+    p_col = find_p_column(
+        d
+    )
 
     p_matrix = None
 
     if p_col is not None:
 
         p_matrix = (
-
             d.pivot(
                 index="Metric",
                 columns="Method",
                 values=p_col,
             )
-
             .reindex(
-                index=DIRECTIONAL_METRICS,
+                index=PAIRED_METRICS,
                 columns=METHOD_ORDER,
             )
-
         )
-
 
     values = matrix.to_numpy(
         dtype=float
     )
 
-
     vmax = np.nanmax(
-        np.abs(values)
+        np.abs(
+            values
+        )
     )
 
+    if vmax == 0:
+
+        vmax = 1.0
 
     norm = TwoSlopeNorm(
         vmin=-vmax,
@@ -983,22 +1144,25 @@ def figure4_paired_effects(primary):
         vmax=vmax,
     )
 
-
-    cmap = LinearSegmentedColormap.from_list(
-        "rq1_effects",
-        [
-            HEAT_NEG,
-            HEAT_ZERO,
-            HEAT_POS,
-        ],
-        N=256,
+    cmap = (
+        LinearSegmentedColormap
+        .from_list(
+            "rq1_mean_differences",
+            [
+                HEAT_NEG,
+                HEAT_ZERO,
+                HEAT_POS,
+            ],
+            N=256,
+        )
     )
-
 
     fig, ax = plt.subplots(
-        figsize=(9.5, 7.8)
+        figsize=(
+            9.6,
+            6.3,
+        )
     )
-
 
     im = ax.imshow(
         values,
@@ -1007,13 +1171,17 @@ def figure4_paired_effects(primary):
         aspect="auto",
     )
 
+    # --------------------------------------------------------
+    # Axes
+    # --------------------------------------------------------
 
     ax.set_xticks(
         np.arange(
-            len(METHOD_ORDER)
+            len(
+                METHOD_ORDER
+            )
         )
     )
-
 
     ax.set_xticklabels(
         METHOD_ORDER,
@@ -1021,39 +1189,43 @@ def figure4_paired_effects(primary):
         ha="right",
     )
 
-
     ax.set_yticks(
         np.arange(
-            len(DIRECTIONAL_METRICS)
+            len(
+                PAIRED_METRICS
+            )
         )
     )
 
-
     ax.set_yticklabels(
-        DIRECTIONAL_METRICS,
+        PAIRED_METRICS
     )
 
-
+    # --------------------------------------------------------
     # Cell borders
+    # --------------------------------------------------------
+
     ax.set_xticks(
         np.arange(
             -0.5,
-            len(METHOD_ORDER),
+            len(
+                METHOD_ORDER
+            ),
             1,
         ),
         minor=True,
     )
-
 
     ax.set_yticks(
         np.arange(
             -0.5,
-            len(DIRECTIONAL_METRICS),
+            len(
+                PAIRED_METRICS
+            ),
             1,
         ),
         minor=True,
     )
-
 
     ax.grid(
         which="minor",
@@ -1062,24 +1234,32 @@ def figure4_paired_effects(primary):
         alpha=0.75,
     )
 
-
     ax.tick_params(
         which="minor",
         bottom=False,
         left=False,
     )
 
+    # --------------------------------------------------------
+    # Cell labels
+    # --------------------------------------------------------
 
-    # Cell values
     for i in range(
-        values.shape[0]
+        values.shape[
+            0
+        ]
     ):
 
         for j in range(
-            values.shape[1]
+            values.shape[
+                1
+            ]
         ):
 
-            value = values[i, j]
+            value = values[
+                i,
+                j,
+            ]
 
             stars = ""
 
@@ -1090,21 +1270,27 @@ def figure4_paired_effects(primary):
                     j,
                 ]
 
-                stars = p_to_star(p)
-
+                stars = (
+                    p_to_star(
+                        p
+                    )
+                )
 
             label = (
                 f"{value:+.3f}"
                 f"{stars}"
             )
 
-
-            # contrast-aware text
-            if abs(value) >= 0.18:
-                text_color = "white"
-            else:
-                text_color = "#111111"
-
+            text_color = (
+                "white"
+                if (
+                    abs(
+                        value
+                    )
+                    >= 0.18
+                )
+                else "#111111"
+            )
 
             ax.text(
                 j,
@@ -1121,14 +1307,20 @@ def figure4_paired_effects(primary):
                 ),
             )
 
+    # --------------------------------------------------------
+    # Title
+    # --------------------------------------------------------
 
     ax.set_title(
-        "RQ1: Direction-Corrected Paired Effects",
+        "RQ1: Direction-Corrected Mean Differences",
         fontsize=17,
         fontweight="bold",
         pad=12,
     )
 
+    # --------------------------------------------------------
+    # Colorbar
+    # --------------------------------------------------------
 
     cbar = fig.colorbar(
         im,
@@ -1137,39 +1329,201 @@ def figure4_paired_effects(primary):
         pad=0.04,
     )
 
-
     cbar.set_label(
-        "Direction-corrected effect\n"
+        "Direction-corrected mean difference\n"
         "(+ LLM-informed, − traditional)",
         fontsize=11,
     )
 
-
-    fig.tight_layout(
-        rect=[
-            0.02,
-            0.02,
-            0.98,
-            0.98,
-        ]
-    )
-
+    fig.tight_layout()
 
     output = (
-        BASE_DIR /
-        "Figure4_RQ1_Paired_Traditional_vs_LLM_Effects.png"
+        BASE_DIR
+        / "Figure4_RQ1_Direction_Corrected_Mean_Differences.png"
     )
-
 
     fig.savefig(
         output,
         dpi=DPI,
+        bbox_inches="tight",
     )
 
-
-    plt.close(fig)
+    plt.close(
+        fig
+    )
 
     return output
+
+
+# ============================================================
+# Validation
+# ============================================================
+
+def validate_final_design(
+    compact,
+    trad_discrim,
+    llm_discrim,
+):
+
+    print()
+
+    print(
+        "Validating final RQ1 design:"
+    )
+
+    print(
+        "3 dimensions x 3 metrics "
+        "= 9 primary metrics"
+    )
+
+    print()
+
+    # --------------------------------------------------------
+    # Stability + model-response alignment
+    # --------------------------------------------------------
+
+    for metric in (
+        STABILITY_METRICS
+        + ALIGNMENT_METRICS
+    ):
+
+        rows = resolve_metric_rows(
+            compact,
+            metric,
+        )
+
+        print(
+            f"[OK] {metric}: "
+            f"{len(rows)} row(s)"
+        )
+
+    # --------------------------------------------------------
+    # Normalized Feature Entropy
+    # --------------------------------------------------------
+
+    for name, df in [
+
+        (
+            "Traditional",
+            trad_discrim,
+        ),
+
+        (
+            "LLM-informed",
+            llm_discrim,
+        ),
+    ]:
+
+        if (
+            "normalized_feature_entropy"
+            not in df.columns
+        ):
+
+            raise ValueError(
+                f"{name} discriminativeness "
+                "file lacks "
+                "'normalized_feature_entropy'."
+            )
+
+    print(
+        "[OK] Normalized Feature Entropy: "
+        "loaded from raw "
+        "discriminativeness metrics"
+    )
+
+    # --------------------------------------------------------
+    # Remaining discriminativeness metrics
+    # --------------------------------------------------------
+
+    for metric in [
+        "Between-instance Jaccard",
+        "Instance-IDF Specificity",
+    ]:
+
+        rows = resolve_metric_rows(
+            compact,
+            metric,
+        )
+
+        print(
+            f"[OK] {metric}: "
+            f"{len(rows)} row(s)"
+        )
+
+    print()
+
+    print(
+        "Final metric directions:"
+    )
+
+    print()
+
+    print(
+        "  Higher indicates stronger "
+        "value under the predefined construct:"
+    )
+
+    print(
+        "    Overlap@K"
+    )
+
+    print(
+        "    Rank Agreement@K"
+    )
+
+    print(
+        "    Direction Agreement@K"
+    )
+
+    print(
+        "    Direction Consistency Rate"
+    )
+
+    print(
+        "    Meaningful-Effect Rate"
+    )
+
+    print(
+        "    Mean |Δp|"
+    )
+
+    print(
+        "    Normalized Feature Entropy"
+    )
+
+    print(
+        "    Instance-IDF Specificity"
+    )
+
+    print()
+
+    print(
+        "  Lower indicates less "
+        "cross-instance overlap:"
+    )
+
+    print(
+        "    Between-instance Jaccard"
+    )
+
+    print()
+
+    print(
+        "Note:"
+    )
+
+    print(
+        "  Normalized Feature Entropy "
+        "describes feature-selection dispersion "
+        "under the study's operationalized construct."
+    )
+
+    print(
+        "  It is not treated as a universal "
+        "overall explanation-quality score."
+    )
+
+    print()
 
 
 # ============================================================
@@ -1180,7 +1534,18 @@ def main():
 
     set_global_style()
 
-    compact, primary = load_data()
+    (
+        compact,
+        primary,
+        trad_discrim,
+        llm_discrim,
+    ) = load_data()
+
+    validate_final_design(
+        compact,
+        trad_discrim,
+        llm_discrim,
+    )
 
     outputs = [
 
@@ -1188,23 +1553,31 @@ def main():
             compact
         ),
 
-        figure3_stability_discriminativeness_tradeoff(
-            compact
+        figure3_alignment_and_discriminativeness(
+            compact,
+            trad_discrim,
+            llm_discrim,
         ),
 
-        figure4_paired_effects(
+        figure4_direction_corrected_mean_differences(
             primary
         ),
-
     ]
 
-
     print()
-    print("RQ1 publication figures generated successfully:")
+
+    print(
+        "RQ1 publication figures "
+        "generated successfully:"
+    )
+
     print()
 
     for output in outputs:
-        print(f"  {output}")
+
+        print(
+            f"  {output}"
+        )
 
     print()
 
